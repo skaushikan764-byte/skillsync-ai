@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ai-skillsync-backend
+    runtime: python
+    repo: https://github.com/yourusername/your-repo.git
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend_v2:app --host 0.0.0.0 --port $PORT
+
+  - type: web
+    name: ai-skillsync-frontend
+    runtime: static
+    repo: https://github.com/yourusername/your-repo.git
+    plan: free
+    buildCommand: echo "Static site"
+    staticPublishPath: .
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://ai-skillsync-backend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

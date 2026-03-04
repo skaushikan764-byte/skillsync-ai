@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#050810"/>
+<title>AI SkillSync — Career Intelligence Platform v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+/* ═══════════════════════════ TOKENS ═══════════════════════════ */
+:root{
+  --ink:#050810;
+  --ink2:#080d1a;
+  --ink3:#0c1221;
+  --glass:rgba(12,18,33,.7);
+  --border:rgba(255,255,255,.07);
+  --border2:rgba(255,255,255,.12);
+  --text:#dde4f0;
+  --muted:#5a6882;
+  --muted2:#8899b4;
+  --blue:#3d7fff;
+  --blue2:#6fa3ff;
+  --cyan:#22d3ee;
+  --violet:#8b5cf6;
+  --green:#10b981;
+  --amber:#f59e0b;
+  --red:#f43f5e;
+  --gold:#fbbf24;
+  --r-sm:8px;--r-md:14px;--r-lg:20px;--r-xl:28px;
+  --font-display:'Syne',sans-serif;
+  --font-body:'Outfit',sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --glow-blue:0 0 24px rgba(61,127,255,.35);
+  --glow-violet:0 0 24px rgba(139,92,246,.35);
+  --glow-cyan:0 0 18px rgba(34,211,238,.3);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;font-size:15px}
+body{background:var(--ink);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow-x:hidden;cursor:default}
+
+/* grain */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
+
+/* grid bg */
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(61,127,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(61,127,255,.025) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+
+/* scrollbar */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:var(--blue);border-radius:2px}
+
+/* ═══════════════════════════ TYPOGRAPHY ═══════════════════════════ */
+h1,h2,h3,h4{font-family:var(--font-display);letter-spacing:-.03em;line-height:1.15}
+.mono{font-family:var(--font-mono)}
+.label-xs{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2)}
+
+/* ═══════════════════════════ NAV ═══════════════════════════ */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(5,8,16,.82);backdrop-filter:blur(24px) saturate(160%);border-bottom:1px solid var(--border)}
+.nav-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:16px;font-weight:800;letter-spacing:-.04em;cursor:pointer}
+.brand-orb{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--violet));display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:var(--glow-blue);animation:orb-pulse 3s ease-in-out infinite}
+@keyframes orb-pulse{0%,100%{box-shadow:0 0 16px rgba(61,127,255,.4)}50%{box-shadow:0 0 28px rgba(139,92,246,.6)}}
+.nav-center{display:flex;gap:2px;align-items:center}
+.nav-btn{padding:6px 12px;border-radius:8px;border:none;background:none;color:var(--muted2);font-size:12.5px;font-weight:500;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap}
+.nav-btn:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.nav-btn.active{color:var(--blue2);background:rgba(61,127,255,.12)}
+.nav-btn i{font-size:11px}
+.nav-right{display:flex;align-items:center;gap:10px}
+.conn-badge{font-size:10px;padding:3px 9px;border-radius:20px;font-family:var(--font-mono);display:flex;align-items:center;gap:5px}
+.conn-live{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:var(--green)}
+.conn-demo{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);color:var(--amber)}
+.conn-dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.xp-pill{background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.25);padding:4px 10px;border-radius:20px;font-size:11px;font-family:var(--font-mono);color:var(--violet);cursor:pointer}
+
+/* ═══════════════════════════ LAYOUT ═══════════════════════════ */
+main{padding-top:56px;position:relative;z-index:1}
+.page{display:none;animation:pg-in .3s ease}
+.page.active{display:block}
+@keyframes pg-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.container{max-width:1280px;margin:0 auto;padding:0 20px}
+.grid12{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.g12{grid-column:span 12}.g8{grid-column:span 8}.g6{grid-column:span 6}
+.g5{grid-column:span 5}.g7{grid-column:span 7}.g4{grid-column:span 4}.g3{grid-column:span 3}
+
+/* ═══════════════════════════ CARDS ═══════════════════════════ */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;backdrop-filter:blur(12px);position:relative;overflow:hidden;transition:border-color .25s,transform .25s}
+.card:hover{border-color:var(--border2)}
+.card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(61,127,255,.03) 0%,transparent 55%);pointer-events:none}
+.card-glow-blue::after{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(ellipse,rgba(61,127,255,.1),transparent 70%);pointer-events:none}
+.card-glow-violet::after{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(ellipse,rgba(139,92,246,.1),transparent 70%);pointer-events:none}
+.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.ch h3{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
+.ch-icon{width:32px;height:32px;border-radius:8px;background:rgba(61,127,255,.12);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--blue2)}
+
+/* ═══════════════════════════ HERO ═══════════════════════════ */
+.hero-wrap{min-height:calc(100vh - 56px);display:flex;flex-direction:column;justify-content:center;padding:60px 0 40px;position:relative;overflow:hidden}
+.hero-bg-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.hero-bg-orb.o1{width:500px;height:500px;top:-100px;left:-100px;background:radial-gradient(circle,rgba(61,127,255,.12),transparent 70%)}
+.hero-bg-orb.o2{width:400px;height:400px;bottom:-50px;right:-50px;background:radial-gradient(circle,rgba(139,92,246,.1),transparent 70%)}
+.hero-content{position:relative;z-index:1;text-align:center;padding:0 20px}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(61,127,255,.1);border:1px solid rgba(61,127,255,.2);padding:5px 14px;border-radius:20px;font-size:11px;font-family:var(--font-mono);color:var(--blue2);margin-bottom:24px;letter-spacing:.05em}
+.hero-eyebrow span{width:5px;height:5px;border-radius:50%;background:var(--blue);box-shadow:0 0 8px var(--blue);animation:blink 1.4s ease-in-out infinite}
+.hero-h1{font-size:clamp(42px,7vw,88px);font-weight:800;letter-spacing:-.04em;line-height:1.02;margin-bottom:20px}
+.hero-h1 .grad{background:linear-gradient(135deg,var(--blue2) 0%,var(--cyan) 50%,var(--violet) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:18px;color:var(--muted2);max-width:480px;margin:0 auto 36px;line-height:1.65;font-weight:300}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:60px}
+.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;max-width:600px;margin:0 auto}
+.stat-strip-item{background:var(--glass);padding:16px;text-align:center}
+.stat-strip-val{font-family:var(--font-display);font-size:26px;font-weight:800;color:var(--blue2)}
+.stat-strip-lbl{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.06em;text-transform:uppercase}
+
+/* ═══════════════════════════ BUTTONS ═══════════════════════════ */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font-body);letter-spacing:-.01em}
+.btn-primary{background:linear-gradient(135deg,var(--blue),#2563eb);color:#fff;box-shadow:0 4px 20px rgba(61,127,255,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(61,127,255,.45)}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.btn-ghost:hover{background:rgba(255,255,255,.06);border-color:var(--blue);color:var(--blue2)}
+.btn-violet{background:linear-gradient(135deg,var(--violet),#7c3aed);color:#fff}
+.btn-violet:hover{transform:translateY(-2px);box-shadow:var(--glow-violet)}
+.btn-sm{padding:7px 14px;font-size:12px}
+.btn-xs{padding:4px 10px;font-size:11px;border-radius:6px}
+.btn-analyze{background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;padding:11px 22px;border-radius:10px;border:none;font-size:13.5px;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .2s;letter-spacing:-.01em;display:inline-flex;align-items:center;gap:8px}
+.btn-analyze:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(61,127,255,.4)}
+
+/* ═══════════════════════════ FORMS ═══════════════════════════ */
+.inp{background:rgba(255,255,255,.04);border:1px solid var(--border2);color:var(--text);padding:10px 14px;border-radius:9px;font-size:13.5px;font-family:var(--font-body);width:100%;transition:border-color .2s,background .2s;outline:none}
+.inp:focus{border-color:var(--blue);background:rgba(61,127,255,.05)}
+.inp::placeholder{color:var(--muted)}
+select.inp option{background:#0c1221}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:10.5px;font-weight:600;color:var(--muted2);margin-bottom:6px;letter-spacing:.09em;text-transform:uppercase}
+textarea.inp{resize:vertical;min-height:80px}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;background:var(--border2);outline:none;margin:6px 0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--blue);cursor:pointer;box-shadow:0 0 8px rgba(61,127,255,.5)}
+
+/* ═══════════════════════════ UPLOAD ═══════════════════════════ */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r-lg);padding:36px 20px;text-align:center;cursor:pointer;transition:all .25s;background:rgba(255,255,255,.02)}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--blue);background:rgba(61,127,255,.05);transform:scale(1.01)}
+.upload-zone i{font-size:36px;color:var(--muted);margin-bottom:12px;display:block;transition:color .2s}
+.upload-zone:hover i{color:var(--blue2)}
+.upload-zone p{font-size:13px;color:var(--muted2)}
+.upload-zone .accent{color:var(--blue2);font-weight:600}
+#fileInput{display:none}
+.upload-progress{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:12px;display:none}
+.upload-progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:2px;transition:width .3s ease;width:0%}
+
+/* ═══════════════════════════ SKILL TAGS ═══════════════════════════ */
+.stag{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:6px;font-size:11px;font-weight:500;margin:3px;font-family:var(--font-mono);cursor:default;transition:transform .15s}
+.stag:hover{transform:scale(1.05)}
+.s-expert{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.2)}
+.s-inter{background:rgba(34,211,238,.1);color:var(--cyan);border:1px solid rgba(34,211,238,.18)}
+.s-begin{background:rgba(61,127,255,.1);color:var(--blue2);border:1px solid rgba(61,127,255,.18)}
+.s-missing{background:rgba(244,63,94,.08);color:#fb7185;border:1px solid rgba(244,63,94,.18)}
+.s-crit{background:rgba(244,63,94,.1);color:#fb7185;border:1px solid rgba(244,63,94,.2)}
+.s-imp{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.s-nice{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+.chip-row{display:flex;flex-wrap:wrap;gap:4px}
+
+/* ═══════════════════════════ CAREER CARD ═══════════════════════════ */
+.cc{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-md);padding:18px;display:flex;gap:16px;align-items:center;transition:all .2s;cursor:default}
+.cc:hover{border-color:var(--border2);background:rgba(61,127,255,.04);transform:translateY(-2px)}
+.cc-ring{width:70px;height:70px;border-radius:50%;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center}
+.cc-ring::before{content:'';position:absolute;inset:0;border-radius:50%}
+.cc-inner{position:absolute;inset:7px;border-radius:50%;background:var(--ink3);display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:1}
+.cc-pct{font-size:16px;font-weight:700;font-family:var(--font-mono);line-height:1}
+.cc-info{flex:1;min-width:0}
+.cc-title{font-size:14px;font-weight:600;margin-bottom:5px}
+.cc-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.growth-badge{padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700}
+.gvh{background:rgba(16,185,129,.12);color:var(--green)}
+.gh{background:rgba(61,127,255,.12);color:var(--blue2)}
+.gm{background:rgba(245,158,11,.1);color:var(--amber)}
+.demand-bar{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted2);margin-top:4px}
+.db-track{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.db-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--cyan))}
+
+/* ═══════════════════════════ ATS / MATCH CIRCLE ═══════════════════════════ */
+.match-circle-wrap{text-align:center}
+.match-ring{display:inline-flex;align-items:center;justify-content:center;position:relative}
+.match-inner{position:absolute;inset:12px;border-radius:50%;background:var(--ink3);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.match-pct{font-size:32px;font-weight:800;font-family:var(--font-display);color:var(--blue2)}
+.match-sub{font-size:10px;color:var(--muted2);letter-spacing:.06em}
+
+/* ═══════════════════════════ LEARNING PATH CARDS ═══════════════════════════ */
+.lp-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-md);padding:18px;transition:all .2s}
+.lp-card:hover{border-color:var(--border2);transform:translateY(-3px)}
+.lp-icon{width:36px;height:36px;border-radius:9px;background:rgba(61,127,255,.12);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.lp-icon i{color:var(--blue2);font-size:15px}
+.lp-card h4{font-size:13px;font-weight:600;margin-bottom:6px}
+.res-link{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--blue2);margin-top:5px;text-decoration:none;opacity:.8;transition:opacity .15s}
+.res-link:hover{opacity:1}
+.res-rating{font-size:10px;color:var(--amber)}
+
+/* ═══════════════════════════ PROGRESS ═══════════════════════════ */
+.progress{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.pf{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.23,1,.32,1)}
+.pf-blue{background:linear-gradient(90deg,var(--blue),var(--cyan))}
+.pf-violet{background:linear-gradient(90deg,var(--violet),#ec4899)}
+.pf-green{background:linear-gradient(90deg,var(--green),var(--cyan))}
+.pf-amber{background:var(--amber)}
+.pf-red{background:var(--red)}
+
+/* ═══════════════════════════ TABS ═══════════════════════════ */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:9px 16px;font-size:12px;font-weight:500;cursor:pointer;color:var(--muted2);border:none;background:none;border-bottom:2px solid transparent;transition:all .2s;font-family:var(--font-body);white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--blue2);border-bottom-color:var(--blue)}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:pg-in .2s ease}
+
+/* ═══════════════════════════ DATA TABLE ═══════════════════════════ */
+.dt{width:100%;border-collapse:collapse;font-size:12.5px}
+.dt th{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);color:var(--muted2);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.dt td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
+.dt tr:hover td{background:rgba(61,127,255,.03)}
+
+/* ═══════════════════════════ LOADING ═══════════════════════════ */
+.loader{text-align:center;padding:40px;color:var(--muted2)}
+.spin{width:32px;height:32px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .65s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════ GAMIFICATION ═══════════════════════════ */
+.xp-bar-wrap{margin:12px 0}
+.xp-bar-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--violet),var(--blue));border-radius:3px;transition:width 1s ease}
+.badge-grid{display:flex;flex-wrap:wrap;gap:8px}
+.badge{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:default;transition:transform .2s;position:relative}
+.badge:hover{transform:scale(1.15)}
+.badge-locked{filter:grayscale(1);opacity:.3}
+.badge[title]:hover::after{content:attr(title);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--ink3);border:1px solid var(--border2);padding:4px 8px;border-radius:6px;font-size:10px;white-space:nowrap;color:var(--text);z-index:10}
+.streak-num{font-family:var(--font-display);font-size:36px;font-weight:800;color:var(--amber);line-height:1}
+.flame{animation:flame-flick .6s ease-in-out infinite alternate}
+@keyframes flame-flick{from{transform:scale(1) rotate(-3deg)}to{transform:scale(1.08) rotate(3deg)}}
+
+/* ═══════════════════════════ MENTOR CARD ═══════════════════════════ */
+.mentor-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;transition:all .2s;text-align:center}
+.mentor-card:hover{border-color:var(--blue);transform:translateY(-3px)}
+.mentor-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--violet));display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;font-family:var(--font-display);color:#fff;margin:0 auto 10px;box-shadow:var(--glow-blue)}
+.mentor-stars{color:var(--amber);font-size:11px}
+
+/* ═══════════════════════════ JOB CARD ═══════════════════════════ */
+.job-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;transition:all .2s}
+.job-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.job-match{font-size:22px;font-weight:800;font-family:var(--font-display);color:var(--green)}
+.job-co{font-size:12px;color:var(--muted2)}
+
+/* ═══════════════════════════ BURNOUT GAUGE ═══════════════════════════ */
+.burnout-score{font-size:56px;font-weight:800;font-family:var(--font-display);line-height:1}
+.trend-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+
+/* ═══════════════════════════ NOTIFY ═══════════════════════════ */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--ink3);border:1px solid var(--border2);border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:10px;min-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:toast-in .3s ease;max-width:320px}
+@keyframes toast-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.toast.out{animation:toast-out .3s ease forwards}
+@keyframes toast-out{to{opacity:0;transform:translateY(20px)}}
+.toast-icon{font-size:18px;flex-shrink:0}
+
+/* ═══════════════════════════ SECTION HEADER ═══════════════════════════ */
+.sec-divider{display:flex;align-items:center;gap:10px;color:var(--muted2);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin:20px 0 14px;font-weight:600}
+.sec-divider::before,.sec-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ═══════════════════════════ THREE.JS CANVAS ═══════════════════════════ */
+#skillUniverse{width:100%;height:420px;border-radius:var(--r-lg);overflow:hidden;cursor:grab}
+#skillUniverse:active{cursor:grabbing}
+
+/* ═══════════════════════════ POMODORO TIMER ═══════════════════════════ */
+.pom-ring{width:140px;height:140px;position:relative;margin:0 auto}
+.pom-ring svg{transform:rotate(-90deg)}
+.pom-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.pom-time{font-size:28px;font-weight:700;font-family:var(--font-mono)}
+.pom-label{font-size:10px;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase}
+
+/* ═══════════════════════════ QUIZ ═══════════════════════════ */
+.q-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-md);padding:20px;margin-bottom:12px}
+.q-num{font-size:10px;color:var(--muted2);font-family:var(--font-mono);margin-bottom:8px}
+.q-text{font-size:14px;font-weight:500;margin-bottom:14px;line-height:1.5}
+.q-opt{background:rgba(255,255,255,.03);border:1px solid var(--border);padding:10px 14px;border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:13px;transition:all .15s}
+.q-opt:hover{border-color:var(--blue);background:rgba(61,127,255,.06)}
+.q-opt.selected{border-color:var(--blue);background:rgba(61,127,255,.12);color:var(--blue2)}
+
+/* ═══════════════════════════ LEADERBOARD ═══════════════════════════ */
+.lb-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.lb-rank{font-size:16px;font-weight:800;font-family:var(--font-display);width:28px;text-align:center}
+.rank-1{color:var(--gold)}
+.rank-2{color:var(--muted2)}
+.rank-3{color:#cd7c32}
+
+/* ═══════════════════════════ EMPTY STATE ═══════════════════════════ */
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.empty i{font-size:36px;margin-bottom:12px;display:block;opacity:.25}
+.empty p{font-size:13px;opacity:.6}
+
+/* ═══════════════════════════ TIMELINE ═══════════════════════════ */
+.tl-item{display:flex;gap:14px;padding-bottom:20px;position:relative}
+.tl-item::before{content:'';position:absolute;left:15px;top:28px;bottom:0;width:1px;background:var(--border)}
+.tl-item:last-child::before{display:none}
+.tl-dot{width:30px;height:30px;border-radius:50%;background:var(--ink3);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:var(--blue2)}
+.tl-content{flex:1}
+.tl-year{font-size:10px;color:var(--muted2);font-family:var(--font-mono)}
+.tl-label{font-size:13px;font-weight:600;margin:2px 0}
+.tl-detail{font-size:12px;color:var(--muted2)}
+
+/* ═══════════════════════════ DEMO NOTICE ═══════════════════════════ */
+.demo-bar{background:rgba(245,158,11,.07);border-bottom:1px solid rgba(245,158,11,.15);padding:7px 20px;font-size:11.5px;color:var(--amber);display:flex;align-items:center;gap:8px;justify-content:center}
+.demo-bar i{font-size:12px}
+
+/* ═══════════════════════════ RESPONSIVE ═══════════════════════════ */
+@media(max-width:900px){.g8,.g7{grid-column:span 12}.g6{grid-column:span 12}.g5{grid-column:span 12}.g4{grid-column:span 6}.g3{grid-column:span 6}}
+@media(max-width:600px){.g4,.g3{grid-column:span 12}.nav-center .nav-btn span{display:none}.hero-h1{font-size:36px}.stat-strip{grid-template-columns:repeat(2,1fr)}}
+</style>
+</style>
+</head>
+<body>
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toasts"></div>
+
+<!-- DEMO BAR -->
+<div class="demo-bar" id="demoBar"><i class="fas fa-circle-info"></i> Running in demo mode — start backend.py on port 8000 to go live</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand" onclick="showPage('home')">
+    <div class="brand-orb">⚡</div>
+    SkillSync<span style="color:var(--muted);font-weight:400;margin-left:2px">AI</span>
+  </div>
+  <div class="nav-center">
+    <button class="nav-btn active" id="nb-home" onclick="showPage('home')"><i class="fas fa-house"></i><span>Home</span></button>
+    <button class="nav-btn" id="nb-resume" onclick="showPage('resume')"><i class="fas fa-file-lines"></i><span>Resume</span></button>
+    <button class="nav-btn" id="nb-careers" onclick="showPage('careers')"><i class="fas fa-briefcase"></i><span>Careers</span></button>
+    <button class="nav-btn" id="nb-learning" onclick="showPage('learning')"><i class="fas fa-graduation-cap"></i><span>Learn</span></button>
+    <button class="nav-btn" id="nb-burnout" onclick="showPage('burnout')"><i class="fas fa-heart-pulse"></i><span>Wellbeing</span></button>
+    <button class="nav-btn" id="nb-simulate" onclick="showPage('simulate')"><i class="fas fa-flask"></i><span>Simulate</span></button>
+    <button class="nav-btn" id="nb-universe" onclick="showPage('universe')"><i class="fas fa-globe"></i><span>3D</span></button>
+    <button class="nav-btn" id="nb-social" onclick="showPage('social')"><i class="fas fa-users"></i><span>Social</span></button>
+    <button class="nav-btn" id="nb-jobs" onclick="showPage('jobs')"><i class="fas fa-suitcase"></i><span>Jobs</span></button>
+  </div>
+  <div class="nav-right">
+    <div class="conn-badge conn-demo" id="connBadge"><span class="conn-dot"></span><span id="connText">DEMO</span></div>
+    <div class="xp-pill" id="xpPill">⚡ 0 XP</div>
+  </div>
+</nav>
+
+<main>
+<!-- ══════════════════ HOME PAGE ══════════════════ -->
+<div id="page-home" class="page active">
+  <div class="hero-wrap">
+    <div class="hero-bg-orb o1"></div>
+    <div class="hero-bg-orb o2"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow"><span></span>AI-Powered Career Intelligence v3.0</div>
+      <h1 class="hero-h1">Map Your Skills.<br><span class="grad">Own Your Career.</span></h1>
+      <p class="hero-sub">Upload your resume, discover precision career matches, and get a personalised AI learning roadmap — in seconds.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="showPage('resume')"><i class="fas fa-rocket"></i> Analyse Resume</button>
+        <button class="btn btn-ghost" onclick="showPage('careers')"><i class="fas fa-compass"></i> Explore Careers</button>
+        <button class="btn btn-violet" onclick="showPage('universe')"><i class="fas fa-globe"></i> 3D Skill Map</button>
+      </div>
+      <div class="stat-strip">
+        <div class="stat-strip-item"><div class="stat-strip-val">14</div><div class="stat-strip-lbl">Career Paths</div></div>
+        <div class="stat-strip-item"><div class="stat-strip-val">150+</div><div class="stat-strip-lbl">Skills Mapped</div></div>
+        <div class="stat-strip-item"><div class="stat-strip-val">8</div><div class="stat-strip-lbl">Departments</div></div>
+        <div class="stat-strip-item"><div class="stat-strip-val">Live</div><div class="stat-strip-lbl">AI Analysis</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="padding-bottom:40px">
+    <div class="grid12">
+      <div class="card g6 card-glow-blue">
+        <div class="ch"><h3>🏆 Career Demand Trends</h3><div class="ch-icon"><i class="fas fa-chart-line"></i></div></div>
+        <canvas id="demandChart" height="200"></canvas>
+      </div>
+      <div class="card g6">
+        <div class="ch"><h3>🚀 Top Growth Roles</h3><div class="ch-icon"><i class="fas fa-arrow-trend-up"></i></div></div>
+        <div id="homeRoleList"></div>
+      </div>
+      <div class="card g12">
+        <div class="ch"><h3>⚡ How It Works</h3></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+          <div class="lp-card"><div class="lp-icon"><i class="fas fa-upload"></i></div><h4>Upload Resume</h4><p style="font-size:12.5px;color:var(--muted2);margin-top:4px">PDF or DOCX — AI extracts skills with confidence scores and experience level detection.</p></div>
+          <div class="lp-card"><div class="lp-icon"><i class="fas fa-brain"></i></div><h4>AI Skill Analysis</h4><p style="font-size:12.5px;color:var(--muted2);margin-top:4px">NLP matches skills to 150+ tracked competencies with fuzzy alias detection.</p></div>
+          <div class="lp-card"><div class="lp-icon"><i class="fas fa-bullseye"></i></div><h4>Career Matching</h4><p style="font-size:12.5px;color:var(--muted2);margin-top:4px">Weighted scoring reveals your top career matches with detailed gap analysis.</p></div>
+          <div class="lp-card"><div class="lp-icon"><i class="fas fa-road"></i></div><h4>Learning Roadmap</h4><p style="font-size:12.5px;color:var(--muted2);margin-top:4px">Priority-ordered skill path with resources, certifications, and time estimates.</p></div>
+          <div class="lp-card"><div class="lp-icon"><i class="fas fa-fire"></i></div><h4>Gamified Progress</h4><p style="font-size:12.5px;color:var(--muted2);margin-top:4px">XP, streaks, badges, and leaderboards keep your motivation alive.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ RESUME PAGE ══════════════════ -->
+<div id="page-resume" class="page">
+  <div class="container" style="padding:28px 20px 40px">
+    <div style="margin-bottom:20px"><h2 style="font-size:24px;font-weight:800;letter-spacing:-.03em">Resume Analysis</h2><p style="color:var(--muted2);font-size:13.5px;margin-top:4px">AI-powered skill extraction, career matching, and personalised learning paths.</p></div>
+    <div class="grid12">
+      <!-- Upload panel -->
+      <div class="card g4">
+        <div class="ch"><h3>📄 Upload Resume</h3><div class="ch-icon"><i class="fas fa-cloud-arrow-up"></i></div></div>
+        <div class="fg">
+          <label>Department</label>
+          <select class="inp" id="deptSelect"></select>
+        </div>
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <i class="fas fa-file-arrow-up"></i>
+          <p>Drop <span class="accent">PDF / DOCX</span> here<br>or click to browse</p>
+          <p style="font-size:10px;color:var(--muted);margin-top:8px">Max 5 MB</p>
+        </div>
+        <input type="file" id="fileInput" accept=".pdf,.docx,.txt"/>
+        <div class="upload-progress" id="upProg"><div class="upload-progress-fill" id="upFill"></div></div>
+        <div id="fileChosen" style="margin-top:10px;font-size:12px;color:var(--muted2)"></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px" id="analyseBtn" onclick="triggerAnalysis()" disabled>
+          <i class="fas fa-magnifying-glass-chart"></i> Analyse Resume
+        </button>
+        <!-- Quick stats after upload -->
+        <div id="resumeQuickStats" style="display:none;margin-top:16px">
+          <div class="sec-divider">Resume Score</div>
+          <div style="text-align:center">
+            <div style="font-size:42px;font-weight:800;font-family:var(--font-display);color:var(--blue2)" id="resumeScoreNum">0</div>
+            <div class="label-xs">out of 100</div>
+            <div class="progress" style="margin-top:10px"><div class="pf pf-blue" id="resumeScoreBar" style="width:0%"></div></div>
+            <div style="margin-top:12px;font-size:12px;color:var(--muted2)" id="expYearsText"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Extracted skills -->
+      <div class="card g8">
+        <div class="ch"><h3>🔍 Extracted Skills</h3><div class="ch-icon"><i class="fas fa-tags"></i></div></div>
+        <div id="resumeResults"><div class="empty"><i class="fas fa-file-circle-question"></i><p>Upload a resume to extract skills</p></div></div>
+      </div>
+      <!-- Top careers -->
+      <div class="card g12" id="topCareersCard" style="display:none">
+        <div class="ch"><h3>🎯 Top Career Matches</h3><div class="ch-icon"><i class="fas fa-trophy"></i></div></div>
+        <div id="topCareers" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px"></div>
+      </div>
+      <!-- Dream job analysis -->
+      <div class="card g12" id="dreamCard" style="display:none">
+        <div class="ch"><h3>✨ Dream Job Analysis</h3><div class="ch-icon"><i class="fas fa-star"></i></div></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+          <input class="inp" id="dreamJobInput" placeholder="Enter your dream role (e.g. ML Engineer, Cloud Architect…)" style="flex:2;min-width:200px"/>
+          <button class="btn-analyze" onclick="analyzeDreamJob()"><i class="fas fa-search"></i> Analyse</button>
+        </div>
+        <div id="dreamResults" style="display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-items:start">
+            <div>
+              <div class="match-circle-wrap">
+                <canvas id="dreamRingChart" width="160" height="160"></canvas>
+              </div>
+              <div id="dreamMatchedSkills" style="margin-top:16px"></div>
+              <div id="dreamMissingSkills" style="margin-top:12px"></div>
+            </div>
+            <div style="max-width:360px"><canvas id="skillRadarChart"></canvas></div>
+            <div>
+              <div class="sec-divider">Career Trajectory</div>
+              <div id="careerTimeline"></div>
+            </div>
+          </div>
+          <div class="sec-divider">📚 Learning Path</div>
+          <div id="learningPathGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px"></div>
+        </div>
+      </div>
+      <!-- Skill heatmap -->
+      <div class="card g12" id="heatmapCard" style="display:none">
+        <div class="ch"><h3>🔥 Skill Heatmap</h3><div class="ch-icon"><i class="fas fa-fire"></i></div></div>
+        <div id="heatmapContainer" style="overflow-x:auto"></div>
+      </div>
+      <!-- Projects -->
+      <div class="card g12" id="projectsCard" style="display:none">
+        <div class="ch"><h3>🛠 Detected Projects</h3><div class="ch-icon"><i class="fas fa-code-branch"></i></div></div>
+        <div id="projectsList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CAREERS PAGE ══════════════════ -->
+<div id="page-careers" class="page">
+  <div class="container" style="padding:28px 20px 40px">
+    <div style="margin-bottom:20px"><h2 style="font-size:24px;font-weight:800;letter-spacing:-.03em">Career Explorer</h2><p style="color:var(--muted2);font-size:13.5px;margin-top:4px">Browse all paths, check skill gaps, and run salary predictions.</p></div>
+    <div class="grid12">
+      <div class="card g4">
+        <div class="ch"><h3>🔧 Gap Check</h3></div>
+        <div class="fg"><label>Department</label><select class="inp" id="gapDept" onchange="updateGapHints()"></select></div>
+        <div class="fg"><label>Target Role</label><select class="inp" id="gapRole"></select></div>
+        <div class="fg"><label>Your Skills (comma-separated)</label><textarea class="inp" id="gapSkills" rows="4" placeholder="Python, SQL, Docker…"></textarea></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="runGapCheck()"><i class="fas fa-chart-bar"></i> Check Gap</button>
+        <div id="gapResult" style="margin-top:16px"></div>
+      </div>
+      <div class="card g8">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab(event,'careersTab','ct-list')">All Roles</button>
+          <button class="tab" onclick="switchTab(event,'careersTab','ct-trending')">Trending Skills</button>
+          <button class="tab" onclick="switchTab(event,'careersTab','ct-salary')">Salary Map</button>
+          <button class="tab" onclick="switchTab(event,'careersTab','ct-interview')">Interview Prep</button>
+          <button class="tab" onclick="switchTab(event,'careersTab','ct-certs')">Certifications</button>
+        </div>
+        <div id="ct-list" class="tab-content active"><div id="careerTable"></div></div>
+        <div id="ct-trending" class="tab-content"><div id="trendingContent"></div></div>
+        <div id="ct-salary" class="tab-content"><canvas id="salaryChart" height="280"></canvas></div>
+        <div id="ct-interview" class="tab-content">
+          <div class="fg"><label>Role</label><select class="inp" id="interviewRole"></select></div>
+          <button class="btn btn-primary btn-sm" onclick="loadInterviewQuestions()"><i class="fas fa-question-circle"></i> Generate Questions</button>
+          <div id="interviewQuestions" style="margin-top:16px"></div>
+        </div>
+        <div id="ct-certs" class="tab-content">
+          <div class="fg"><label>Skill</label><select class="inp" id="certSkill"></select></div>
+          <button class="btn btn-primary btn-sm" onclick="loadCerts()"><i class="fas fa-certificate"></i> Find Certifications</button>
+          <div id="certResults" style="margin-top:16px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ LEARNING PAGE ══════════════════ -->
+<div id="page-learning" class="page">
+  <div class="container" style="padding:28px 20px 40px">
+    <div style="margin-bottom:20px"><h2 style="font-size:24px;font-weight:800;letter-spacing:-.03em">Learning Dashboard</h2><p style="color:var(--muted2);font-size:13.5px;margin-top:4px">Track progress, log sessions, earn badges, and use the Pomodoro timer.</p></div>
+    <div class="grid12">
+      <!-- XP & Streak -->
+      <div class="card g4 card-glow-violet">
+        <div class="ch"><h3>⚡ Your Progress</h3></div>
+        <div style="text-align:center;margin-bottom:16px">
+          <div style="font-size:44px;font-weight:800;font-family:var(--font-display);color:var(--violet)" id="xpDisplay">0</div>
+          <div class="label-xs">total XP</div>
+          <div class="label-xs" style="margin-top:6px">Level <span id="levelDisplay">1</span></div>
+          <div class="xp-bar-wrap"><div class="xp-bar-track"><div class="xp-bar-fill" id="xpBarFill" style="width:0%"></div></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="text-align:center">
+            <div class="streak-num" id="streakDisplay">0</div>
+            <div class="label-xs">day streak</div>
+          </div>
+          <div style="font-size:36px" class="flame">🔥</div>
+          <div style="text-align:center">
+            <div style="font-size:28px;font-weight:800;font-family:var(--font-display);color:var(--cyan)" id="hoursDisplay">0</div>
+            <div class="label-xs">study hours</div>
+          </div>
+        </div>
+        <div class="sec-divider">Badges</div>
+        <div class="badge-grid" id="badgeGrid"></div>
+      </div>
+      <!-- Log Session -->
+      <div class="card g4">
+        <div class="ch"><h3>📝 Log Study Session</h3></div>
+        <div class="fg"><label>Skill Practiced</label><select class="inp" id="sessionSkill"></select></div>
+        <div class="fg"><label>Duration (minutes)</label><input class="inp" type="number" id="sessionMins" value="30" min="5" max="480"/></div>
+        <div class="fg"><label>Technique</label>
+          <select class="inp" id="sessionTech">
+            <option value="regular">Regular Study</option>
+            <option value="pomodoro">Pomodoro (+30% XP)</option>
+            <option value="spaced">Spaced Repetition</option>
+          </select>
+        </div>
+        <div class="fg"><label>Difficulty: <span id="diffVal">5</span>/10</label>
+          <input type="range" min="1" max="10" value="5" id="sessionDiff" oninput="document.getElementById('diffVal').textContent=this.value"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="logSession()"><i class="fas fa-plus-circle"></i> Log Session</button>
+      </div>
+      <!-- Pomodoro -->
+      <div class="card g4">
+        <div class="ch"><h3>🍅 Pomodoro Timer</h3></div>
+        <div class="pom-ring" id="pomRing">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="60" fill="none" stroke="var(--border2)" stroke-width="6"/>
+            <circle cx="70" cy="70" r="60" fill="none" stroke="var(--blue)" stroke-width="6" stroke-dasharray="377" stroke-dashoffset="0" id="pomCircle" stroke-linecap="round" style="transition:stroke-dashoffset .5s linear"/>
+          </svg>
+          <div class="pom-text">
+            <div class="pom-time" id="pomTime">25:00</div>
+            <div class="pom-label" id="pomLabel">Focus</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:16px">
+          <button class="btn btn-ghost btn-sm" onclick="pomCtrl('start')" id="pomStartBtn"><i class="fas fa-play"></i> Start</button>
+          <button class="btn btn-ghost btn-sm" onclick="pomCtrl('pause')"><i class="fas fa-pause"></i> Pause</button>
+          <button class="btn btn-ghost btn-sm" onclick="pomCtrl('reset')"><i class="fas fa-rotate-left"></i> Reset</button>
+        </div>
+        <div style="display:flex;gap:6px;justify-content:center;margin-top:10px">
+          <button class="btn btn-xs btn-ghost" onclick="setPomMode(25,'Focus')">25m</button>
+          <button class="btn btn-xs btn-ghost" onclick="setPomMode(5,'Short Break')">5m</button>
+          <button class="btn btn-xs btn-ghost" onclick="setPomMode(15,'Long Break')">15m</button>
+        </div>
+        <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--muted2)">Sessions today: <span id="pomSessions" style="color:var(--blue2)">0</span></div>
+      </div>
+      <!-- Learning path plan -->
+      <div class="card g8">
+        <div class="ch"><h3>🗺 Generate Learning Plan</h3></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+          <div class="fg"><label>Department</label><select class="inp" id="planDept"></select></div>
+          <div class="fg"><label>Target Role</label><select class="inp" id="planRole"></select></div>
+          <div class="fg"><label>Weeks Available</label><input class="inp" type="number" id="planWeeks" value="12" min="4" max="52"/></div>
+        </div>
+        <div class="fg"><label>Current Skills</label><textarea class="inp" id="planSkills" rows="2" placeholder="Python, SQL…"></textarea></div>
+        <button class="btn btn-primary btn-sm" onclick="generatePlan()"><i class="fas fa-map-location-dot"></i> Generate Plan</button>
+        <div id="planResult" style="margin-top:16px"></div>
+      </div>
+      <!-- Quiz -->
+      <div class="card g4">
+        <div class="ch"><h3>🧠 Practice Quiz</h3></div>
+        <div class="fg"><label>Skill</label><select class="inp" id="quizSkill"></select></div>
+        <div class="fg"><label>Difficulty</label>
+          <select class="inp" id="quizDiff"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select>
+        </div>
+        <button class="btn btn-violet btn-sm" style="width:100%;justify-content:center" onclick="startQuiz()"><i class="fas fa-brain"></i> Start Quiz</button>
+        <div id="quizContainer" style="margin-top:16px"></div>
+      </div>
+      <!-- Activity chart -->
+      <div class="card g8">
+        <div class="ch"><h3>📈 Learning Velocity</h3></div>
+        <canvas id="activityChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ BURNOUT PAGE ══════════════════ -->
+<div id="page-burnout" class="page">
+  <div class="container" style="padding:28px 20px 40px">
+    <div style="margin-bottom:20px"><h2 style="font-size:24px;font-weight:800;letter-spacing:-.03em">Wellbeing Monitor</h2><p style="color:var(--muted2);font-size:13.5px;margin-top:4px">Track burnout risk, wellness trends, and get personalised recovery tips.</p></div>
+    <div class="grid12">
+      <div class="card g5">
+        <div class="ch"><h3>📊 Burnout Assessment</h3></div>
+        <div class="fg"><label>Work/Study Hours/Day: <span id="wh_val" style="color:var(--blue2)">8</span>h</label><input type="range" id="workHours" min="1" max="18" value="8" oninput="document.getElementById('wh_val').textContent=this.value;liveUpdateBurnout()"/></div>
+        <div class="fg"><label>Sleep Hours/Night: <span id="sh_val" style="color:var(--blue2)">7</span>h</label><input type="range" id="sleepHours" min="2" max="12" value="7" oninput="document.getElementById('sh_val').textContent=this.value;liveUpdateBurnout()"/></div>
+        <div class="fg"><label>Exercise Days/Week: <span id="ex_val" style="color:var(--blue2)">3</span></label><input type="range" id="exerciseDays" min="0" max="7" value="3" oninput="document.getElementById('ex_val').textContent=this.value;liveUpdateBurnout()"/></div>
+        <div class="fg"><label>Stress Level: <span id="sl_val" style="color:var(--blue2)">5</span>/10</label><input type="range" id="stressLevel" min="1" max="10" value="5" oninput="document.getElementById('sl_val').textContent=this.value;liveUpdateBurnout()"/></div>
+        <div class="fg"><label>Satisfaction: <span id="sat_val" style="color:var(--blue2)">6</span>/10</label><input type="range" id="satisfactionScore" min="1" max="10" value="6" oninput="document.getElementById('sat_val').textContent=this.value;liveUpdateBurnout()"/></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="checkBurnout()"><i class="fas fa-heart-pulse"></i> Full Assessment</button>
+      </div>
+      <div class="card g7">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab(event,'burnoutTab','bt-result')">Risk Report</button>
+          <button class="tab" onclick="switchTab(event,'burnoutTab','bt-history')">History</button>
+          <button class="tab" onclick="switchTab(event,'burnoutTab','bt-wellness')">Wellness Tips</button>
+        </div>
+        <div id="bt-result" class="tab-content active"><div id="burnoutResult"><div class="empty"><i class="fas fa-heart"></i><p>Adjust sliders to assess your burnout risk</p></div></div></div>
+        <div id="bt-history" class="tab-content"><canvas id="burnoutHistChart" height="200"></canvas></div>
+        <div id="bt-wellness" class="tab-content"><div id="wellnessTips"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SIMULATE PAGE ══════════════════ -->
+<div id="page-simulate" class="page">
+  <div class="container" style="padding:28px 20px 40px">
+    <div style="margin-bottom:20px"><h2 style="font-size:24px;font-weight:800;letter-spacing:-.03em">Skill Simulator</h2><p style="color:var(--muted2);font-size:13.5px;margin-top:4px">Model "what-if" skill additions and see their impact on match scores and salary.</p></div>
+    <div class="grid12">
+      <div class="card g5">
+        <div class="ch"><h3>⚗️ Simulation Setup</h3></div>
+        <div class="fg"><label>Department</label><select class="inp" id="simDept"></select></div>
+        <div class="fg"><label>Target Role</label><select class="inp" id="simRole"></select></div>
+        <div class="fg"><label>Current Skills</label><textarea class="inp" id="simCurrentSkills" rows="3" placeholder="Python, SQL…"></textarea></div>
+        <div class="fg"><label>Skills to Add (simulate)</label><textarea class="inp" id="simAddSkills" rows="3" placeholder="TensorFlow, Docker…"></textarea></div>
+        <button class="btn btn-violet" style="width:100%;justify-content:center" onclick="runSimulation()"><i class="fas fa-play"></i> Run Simulation</button>
+      </div>
+      <div class="card g7">
+        <div class="ch"><h3>📊 Simulation Results</h3></div>
+        <div id="simResult"><div class="empty"><i class="fas fa-flask"></i><p>Configure and run a simulation</p></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ 3D UNIVERSE PAGE ══════════════════ -->
+<div id="page-universe" class="page">
+  <div class="container" style="padding:28px 20px 40px">
+    <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div><h2 style="font-size:24px;font-weight:800;letter-spacing:-.03em">3D Skill Universe</h2><p style="color:var(--muted2);font-size:13.5px;margin-top:4px">Drag to rotate · Scroll to zoom · Click nodes to explore</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select class="inp" id="universeFilter" style="width:160px" onchange="filterUniverse()">
+          <option value="all">All Departments</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="resetUniverse()"><i class="fas fa-rotate-left"></i> Reset</button>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="skillUniverse"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px" id="universeDetails"></div>
+  </div>
+</div>
+
+<!-- ══════════════════ SOCIAL PAGE ══════════════════ -->
+<div id="page-social" class="page">
+  <div class="container" style="padding:28px 20px 40px">
+    <div style="margin-bottom:20px"><h2 style="font-size:24px;font-weight:800;letter-spacing:-.03em">Community & Mentors</h2><p style="color:var(--muted2);font-size:13.5px;margin-top:4px">Connect with mentors, join study groups, and compete on leaderboards.</p></div>
+    <div class="grid12">
+      <div class="card g12">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab(event,'socialTab','st-mentors')">Mentors</button>
+          <button class="tab" onclick="switchTab(event,'socialTab','st-leaderboard')">Leaderboard</button>
+          <button class="tab" onclick="switchTab(event,'socialTab','st-groups')">Study Groups</button>
+          <button class="tab" onclick="switchTab(event,'socialTab','st-stories')">Success Stories</button>
+        </div>
+        <div id="st-mentors" class="tab-content active"><div id="mentorGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:4px"></div></div>
+        <div id="st-leaderboard" class="tab-content">
+          <div style="display:flex;gap:10px;margin-bottom:14px">
+            <select class="inp" style="width:180px" id="lbDept" onchange="loadLeaderboard()"></select>
+          </div>
+          <div id="leaderboardList"></div>
+        </div>
+        <div id="st-groups" class="tab-content"><div id="studyGroups"></div></div>
+        <div id="st-stories" class="tab-content"><div id="successStories"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ JOBS PAGE ══════════════════ -->
+<div id="page-jobs" class="page">
+  <div class="container" style="padding:28px 20px 40px">
+    <div style="margin-bottom:20px"><h2 style="font-size:24px;font-weight:800;letter-spacing:-.03em">Job Portal</h2><p style="color:var(--muted2);font-size:13.5px;margin-top:4px">AI-matched job listings with interview prep and application tracker.</p></div>
+    <div class="grid12">
+      <div class="card g4">
+        <div class="ch"><h3>🔍 Job Search</h3></div>
+        <div class="fg"><label>Role</label><select class="inp" id="jobRole"></select></div>
+        <div class="fg"><label>Location</label><input class="inp" id="jobLocation" value="Bangalore" placeholder="City…"/></div>
+        <div class="fg"><label>Your Skills</label><textarea class="inp" id="jobSkills" rows="3" placeholder="Python, ML…"></textarea></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="searchJobs()"><i class="fas fa-magnifying-glass"></i> Search Jobs</button>
+      </div>
+      <div class="card g8">
+        <div class="ch"><h3>💼 Matching Jobs</h3><span id="jobCount" style="font-size:11px;color:var(--muted2)"></span></div>
+        <div id="jobGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
+          <div class="empty"><i class="fas fa-briefcase"></i><p>Search for jobs above</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════════════════
+const API = 'http://localhost:8000';
+let ONLINE = false;
+let radarChart = null, dreamRingCtx = null, dreamRingState = {pct:0};
+let pomTimer = null, pomSeconds = 25*60, pomRunning = false, pomMode = 'focus', pomSessionsToday = 0;
+let userXP = 0, userLevel = 1, userStreak = 0, userHours = 0;
+let burnoutHistData = Array.from({length:7},()=>Math.floor(Math.random()*60+10));
+let extractedSkills = [], currentDept = '', lastCareerMatches = [];
+let universeScene = null, universeCamera = null, universeRenderer = null, universeAnimId = null;
+
+const DEPARTMENTS = ["CSE","IT","ECE","MECH","CIVIL","AI&DS","AI&ML","EEE"];
+const DEPT_SKILLS = {
+  CSE:  ["Python","Java","C++","Data Structures","Algorithms","DBMS","OS","Computer Networks","Machine Learning","Django","React","Angular","SQL","Git","Docker","Kubernetes","REST APIs","GraphQL"],
+  IT:   ["Python","Java","Networking","Cybersecurity","Cloud Computing","Database Management","Linux","Shell Scripting","DevOps","AWS","Azure","GCP","SIEM","Penetration Testing"],
+  ECE:  ["C Programming","Embedded Systems","MATLAB","VLSI","Signal Processing","Electronics","Circuit Design","IoT","Arduino","Raspberry Pi","PCB Design","Verilog/VHDL","ARM Cortex","RTOS","CAN Bus"],
+  MECH: ["AutoCAD","SolidWorks","CATIA","ANSYS","Thermodynamics","Fluid Mechanics","Manufacturing","FEA","CFD","PLC Programming","Robotics","GD&T","Lean Manufacturing","Six Sigma"],
+  CIVIL:["AutoCAD Civil 3D","STAAD Pro","Revit","Structural Analysis","Geotechnical Engineering","Transportation","Environmental Engineering","Surveying","Project Management","Primavera","ETABS","GIS","BIM"],
+  "AI&DS":["Python","Machine Learning","Deep Learning","TensorFlow","PyTorch","Data Visualization","Statistics","SQL","NLP","Computer Vision","Big Data","Spark","Tableau","Power BI","Pandas","NumPy","Scikit-learn"],
+  "AI&ML":["Python","Machine Learning","Deep Learning","Neural Networks","NLP","Computer Vision","Reinforcement Learning","TensorFlow","PyTorch","Keras","Scikit-learn","Pandas","NumPy","MLOps","Hugging Face","LLMs","RAG","RLHF"],
+  EEE:  ["C Programming","MATLAB","Power Systems","Control Systems","Electrical Machines","Power Electronics","PLC","SCADA","Embedded Systems","IoT","Renewable Energy","Circuit Analysis","Smart Grid"],
+};
+const CAREER_ROLES = {
+  "Software Engineer":          {req:["Python","Java","Data Structures","Algorithms","DBMS","OS","Git","SQL","REST APIs"],salary:"₹6-15 LPA",growth:"High",demand:92,months:8},
+  "Data Scientist":             {req:["Python","Machine Learning","Statistics","SQL","Data Visualization","Pandas","NumPy","Deep Learning"],salary:"₹8-20 LPA",growth:"Very High",demand:96,months:10},
+  "ML Engineer":                {req:["Python","Machine Learning","Deep Learning","TensorFlow","PyTorch","MLOps","Docker","Cloud Computing"],salary:"₹10-25 LPA",growth:"Very High",demand:98,months:12},
+  "Web Developer":              {req:["HTML","CSS","JavaScript","React","Node.js","SQL","Git","REST APIs"],salary:"₹4-12 LPA",growth:"High",demand:88,months:6},
+  "DevOps Engineer":            {req:["Linux","Docker","Kubernetes","AWS","CI/CD","Python","Git","Shell Scripting"],salary:"₹7-18 LPA",growth:"High",demand:90,months:9},
+  "Cloud Architect":            {req:["AWS","Networking","Cybersecurity","Docker","Kubernetes","Terraform","Python","Linux"],salary:"₹15-30 LPA",growth:"Very High",demand:94,months:14},
+  "Embedded Engineer":          {req:["C Programming","Embedded Systems","IoT","RTOS","PCB Design","Arduino","Raspberry Pi","ARM Cortex"],salary:"₹5-12 LPA",growth:"Medium",demand:76,months:8},
+  "VLSI Design Engineer":       {req:["Verilog/VHDL","Digital Design","ASIC","FPGA","MATLAB","Circuit Design"],salary:"₹6-15 LPA",growth:"Medium",demand:72,months:10},
+  "Mechanical Design Engineer": {req:["AutoCAD","SolidWorks","CATIA","FEA","CFD","GD&T","Manufacturing"],salary:"₹4-10 LPA",growth:"Medium",demand:68,months:7},
+  "Civil Engineer":             {req:["AutoCAD Civil 3D","STAAD Pro","Revit","Structural Analysis","Project Management","Surveying","GIS","BIM"],salary:"₹4-9 LPA",growth:"Medium",demand:65,months:7},
+  "AI Engineer":                {req:["Python","Machine Learning","Deep Learning","NLP","Computer Vision","TensorFlow","PyTorch","MLOps","LLMs"],salary:"₹10-22 LPA",growth:"Very High",demand:99,months:12},
+  "Data Analyst":               {req:["SQL","Excel","Tableau","Python","Statistics","Data Visualization","Pandas","Communication"],salary:"₹4-10 LPA",growth:"High",demand:85,months:5},
+  "Cybersecurity Analyst":      {req:["Networking","Linux","Cybersecurity","SIEM","Penetration Testing","Python","Incident Response"],salary:"₹7-16 LPA",growth:"Very High",demand:93,months:10},
+  "Product Manager":            {req:["Product Strategy","SQL","Data Analysis","Communication","Agile","User Research","Python","Project Management"],salary:"₹12-28 LPA",growth:"High",demand:87,months:15},
+};
+const LR = {
+  Python:[{name:"Python.org Tutorial",url:"https://docs.python.org",rating:4.8,hours:20,type:"free"},{name:"Automate the Boring Stuff",url:"https://automatetheboringstuff.com",rating:4.7,hours:30,type:"free"}],
+  "Machine Learning":[{name:"Andrew Ng ML Specialisation",url:"https://coursera.org",rating:4.9,hours:60,type:"paid"},{name:"fast.ai Practical ML",url:"https://course.fast.ai",rating:4.8,hours:40,type:"free"}],
+  SQL:[{name:"SQLZoo",url:"https://sqlzoo.net",rating:4.5,hours:15,type:"free"},{name:"LeetCode SQL",url:"https://leetcode.com",rating:4.8,hours:30,type:"freemium"}],
+  Docker:[{name:"Docker Official Docs",url:"https://docs.docker.com",rating:4.6,hours:8,type:"free"},{name:"Docker Deep Dive",url:"https://udemy.com",rating:4.7,hours:15,type:"paid"}],
+  default:[{name:"Coursera MOOC",url:"https://coursera.org",rating:4.5,hours:40,type:"paid"},{name:"Official Documentation",url:"#",rating:4.4,hours:15,type:"free"}],
+};
+const CERTS = {
+  AWS:[{name:"AWS Cloud Practitioner",provider:"Amazon",level:"Foundational",cost:"$100"},{name:"AWS Solutions Architect",provider:"Amazon",level:"Associate",cost:"$150"}],
+  Python:[{name:"PCEP Entry Level",provider:"Python Institute",level:"Entry",cost:"$59"},{name:"PCAP Professional",provider:"Python Institute",level:"Associate",cost:"$295"}],
+  "Machine Learning":[{name:"TensorFlow Developer",provider:"Google",level:"Professional",cost:"$100"},{name:"AWS ML Specialty",provider:"Amazon",level:"Specialty",cost:"$300"}],
+  default:[{name:"Udemy Certificate",provider:"Udemy",level:"Beginner",cost:"₹499"},{name:"Coursera Certificate",provider:"Coursera",level:"Intermediate",cost:"$39/mo"}],
+};
+const INTERVIEW_QS = {
+  Python:["Explain GIL in Python","Difference between deepcopy and copy","How does Python manage memory?","Explain decorators with examples","What are generators?"],
+  "Machine Learning":["Bias-variance tradeoff explained","How does gradient descent work?","Explain overfitting and regularisation","ROC-AUC vs Precision-Recall","Explain Random Forest vs Gradient Boosting"],
+  SQL:["INNER vs OUTER JOIN","Write a query for second highest salary","Explain window functions","Normalisation vs Denormalisation","Explain ACID properties"],
+  default:["Describe a challenging project","How do you keep up with technology?","Tell me about a time you debugged a hard problem","How do you prioritise competing deadlines?"],
+};
+const MENTORS = [
+  {id:1,name:"Arjun Sharma",role:"Senior ML Engineer",co:"Google",exp:8,skills:["Python","ML","TensorFlow"],rating:4.9,sessions:142,av:"AS"},
+  {id:2,name:"Priya Nair",role:"Data Scientist",co:"Microsoft",exp:6,skills:["Python","Statistics","Tableau"],rating:4.8,sessions:98,av:"PN"},
+  {id:3,name:"Rahul Verma",role:"DevOps Lead",co:"Amazon",exp:10,skills:["Kubernetes","Docker","AWS"],rating:4.7,sessions:215,av:"RV"},
+  {id:4,name:"Sneha Kulkarni",role:"Frontend Architect",co:"Flipkart",exp:7,skills:["React","Vue.js","TypeScript"],rating:4.9,sessions:88,av:"SK"},
+  {id:5,name:"Vikram Iyer",role:"VLSI Design Engineer",co:"Qualcomm",exp:9,skills:["Verilog/VHDL","ASIC","FPGA"],rating:4.6,sessions:54,av:"VI"},
+  {id:6,name:"Meera Pillai",role:"Cloud Architect",co:"Infosys",exp:11,skills:["AWS","Azure","Terraform"],rating:4.8,sessions:176,av:"MP"},
+];
+const TRENDING = {
+  "CSE":[{skill:"LLMs",growth:"+145%",demand:99},{skill:"MLOps",growth:"+112%",demand:96},{skill:"Rust",growth:"+78%",demand:82},{skill:"WebAssembly",growth:"+65%",demand:74},{skill:"Kubernetes",growth:"+58%",demand:90}],
+  "AI&DS":[{skill:"RAG",growth:"+210%",demand:99},{skill:"LLMs",growth:"+190%",demand:99},{skill:"Multimodal AI",growth:"+155%",demand:97},{skill:"AutoML",growth:"+88%",demand:90},{skill:"Causal ML",growth:"+76%",demand:84}],
+  "AI&ML":[{skill:"RLHF",growth:"+220%",demand:99},{skill:"Diffusion Models",growth:"+180%",demand:97},{skill:"Foundation Models",growth:"+165%",demand:98},{skill:"Quantization",growth:"+130%",demand:90}],
+  default:[{skill:"AI/ML",growth:"+145%",demand:97},{skill:"Cloud Computing",growth:"+92%",demand:93},{skill:"Cybersecurity",growth:"+110%",demand:94},{skill:"DevOps",growth:"+75%",demand:88}],
+};
+const BADGES_DEF = [
+  {emoji:"🚀",label:"First Upload",xpNeeded:0},
+  {emoji:"🔥",label:"3-Day Streak",xpNeeded:150},
+  {emoji:"⚡",label:"Speed Learner",xpNeeded:500},
+  {emoji:"🧠",label:"Deep Thinker",xpNeeded:1000},
+  {emoji:"🏆",label:"Champion",xpNeeded:2000},
+  {emoji:"💎",label:"Diamond",xpNeeded:5000},
+  {emoji:"🌟",label:"Superstar",xpNeeded:10000},
+  {emoji:"🎓",label:"Graduate",xpNeeded:20000},
+];
+const STUDY_GROUPS = ["AI/ML Study Circle — 24 members","Data Science Bootcamp — 18 members","Web Dev Warriors — 31 members","Embedded Systems Guild — 12 members","Cloud & DevOps Hub — 27 members"];
+const SUCCESS_STORIES = [
+  {name:"Aisha K.",dept:"AI&ML",story:"Went from 0 ML experience to Google ML Engineer in 14 months using SkillSync roadmap.",salary:"₹22 LPA",avatar:"AK"},
+  {name:"Rohit M.",dept:"CSE",story:"Used skill gap analysis to target DevOps roles. Landed Amazon SDE in 10 months.",salary:"₹18 LPA",avatar:"RM"},
+  {name:"Divya S.",dept:"ECE",story:"Transitioned from ECE to Data Science using the personalised learning path.",salary:"₹16 LPA",avatar:"DS"},
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════════════════
+function toast(msg,icon='✅',duration=3000){
+  const w=document.getElementById('toasts');
+  const d=document.createElement('div');
+  d.className='toast';
+  d.innerHTML=`<span class="toast-icon">${icon}</span><span>${msg}</span>`;
+  w.appendChild(d);
+  setTimeout(()=>{d.classList.add('out');setTimeout(()=>d.remove(),400)},duration);
+}
+function computeMatch(userSkills,roleSkills){
+  if(!roleSkills.length)return 0;
+  const ul=userSkills.map(s=>s.toLowerCase());
+  const matched=roleSkills.filter(s=>ul.includes(s.toLowerCase())).length;
+  return parseFloat((matched/roleSkills.length*100).toFixed(1));
+}
+function getMissing(userSkills,roleSkills){
+  const ul=userSkills.map(s=>s.toLowerCase());
+  return roleSkills.filter(s=>!ul.includes(s.toLowerCase()));
+}
+function rnd(min,max){return min+Math.floor(Math.random()*(max-min+1))}
+function rndFloat(min,max){return parseFloat((min+Math.random()*(max-min)).toFixed(2))}
+function growthClass(g){return g==='Very High'?'gvh':g==='High'?'gh':'gm'}
+function addXP(amount){
+  userXP+=amount;
+  userLevel=Math.max(1,Math.floor(userXP/500)+1);
+  updateXPUI();
+  document.getElementById('xpPill').textContent=`⚡ ${userXP} XP`;
+}
+function updateXPUI(){
+  document.getElementById('xpDisplay').textContent=userXP;
+  document.getElementById('levelDisplay').textContent=userLevel;
+  const progress=(userXP%500)/500*100;
+  document.getElementById('xpBarFill').style.width=progress+'%';
+  renderBadges();
+}
+function renderBadges(){
+  const g=document.getElementById('badgeGrid');
+  if(!g)return;
+  g.innerHTML=BADGES_DEF.map(b=>`<div class="badge ${userXP>=b.xpNeeded?'':'badge-locked'}" title="${b.label} (${b.xpNeeded} XP)">${b.emoji}</div>`).join('');
+}
+
+async function apiPost(url,body,isFormData=false){
+  if(!ONLINE)return null;
+  try{
+    const opts={method:'POST'};
+    if(isFormData){opts.body=body}
+    else{opts.headers={'Content-Type':'application/json'};opts.body=JSON.stringify(body)}
+    const r=await fetch(API+url,opts);
+    return await r.json();
+  }catch{return null}
+}
+async function apiGet(url){
+  if(!ONLINE)return null;
+  try{const r=await fetch(API+url);return await r.json()}catch{return null}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const nb=document.getElementById('nb-'+name);
+  if(nb)nb.classList.add('active');
+  if(name==='universe')initUniverse();
+  if(name==='social')loadSocialContent();
+  if(name==='burnout')initBurnoutChart();
+}
+function switchTab(evt,group,panelId){
+  const par=evt.target.closest('.card,.page');
+  par.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  par.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  evt.target.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',async()=>{
+  populateSelects();
+  initHomeCharts();
+  buildCareerTable();
+  buildTrending('CSE');
+  buildSalaryChart();
+  buildMentors();
+  buildStudyGroups();
+  buildSuccessStories();
+  initBurnoutChart();
+  initActivityChart();
+  loadLeaderboard();
+  renderBadges();
+  liveUpdateBurnout();
+  await pingBackend();
+});
+
+async function pingBackend(){
+  try{
+    const r=await fetch(API+'/',{signal:AbortSignal.timeout(2000)});
+    if(r.ok){
+      ONLINE=true;
+      const b=document.getElementById('connBadge');
+      b.className='conn-badge conn-live';
+      b.innerHTML='<span class="conn-dot"></span><span>LIVE</span>';
+      document.getElementById('demoBar').style.display='none';
+      toast('Backend connected!','🟢');
+    }
+  }catch{}
+}
+
+function populateSelects(){
+  const roleOptions=Object.keys(CAREER_ROLES).map(r=>`<option value="${r}">${r}</option>`).join('');
+  const deptOptions='<option value="">Select…</option>'+DEPARTMENTS.map(d=>`<option value="${d}">${d}</option>`).join('');
+  const deptOptionsAll=DEPARTMENTS.map(d=>`<option value="${d}">${d}</option>`).join('');
+  const allSkills=[...new Set(Object.values(DEPT_SKILLS).flat())].sort();
+  const skillOptions=allSkills.map(s=>`<option value="${s}">${s}</option>`).join('');
+
+  ['deptSelect','gapDept','simDept','planDept','lbDept'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=id==='deptSelect'?deptOptions:deptOptionsAll;
+  });
+  ['gapRole','simRole','planRole','jobRole','interviewRole'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=roleOptions;
+  });
+  const certSkillEl=document.getElementById('certSkill');
+  if(certSkillEl)certSkillEl.innerHTML=Object.keys(CERTS).map(s=>`<option value="${s}">${s}</option>`).join('');
+  ['sessionSkill','quizSkill'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=skillOptions;
+  });
+  // Universe filter
+  const uf=document.getElementById('universeFilter');
+  if(uf)uf.innerHTML='<option value="all">All Departments</option>'+DEPARTMENTS.map(d=>`<option value="${d}">${d}</option>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HOME CHARTS
+// ═══════════════════════════════════════════════════════════════════════════
+function initHomeCharts(){
+  const ctx=document.getElementById('demandChart').getContext('2d');
+  new Chart(ctx,{type:'line',data:{
+    labels:['2020','2021','2022','2023','2024','2025'],
+    datasets:[
+      {label:'AI/ML',data:[30,45,58,72,88,99],borderColor:'#3d7fff',backgroundColor:'rgba(61,127,255,.1)',tension:.45,fill:true,pointRadius:3},
+      {label:'Cloud',data:[25,35,50,64,76,88],borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,.08)',tension:.45,fill:true,pointRadius:3},
+      {label:'Cybersecurity',data:[20,32,50,68,82,95],borderColor:'#22d3ee',backgroundColor:'rgba(34,211,238,.08)',tension:.45,fill:true,pointRadius:3},
+      {label:'Data Science',data:[22,33,48,63,74,85],borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',tension:.45,fill:true,pointRadius:3},
+    ]
+  },options:{responsive:true,plugins:{legend:{labels:{color:'#8899b4',font:{size:11}}}},scales:{x:{ticks:{color:'#5a6882'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#5a6882'},grid:{color:'rgba(255,255,255,.04)'},min:0,max:100}}}});
+
+  // Role list
+  const roles=Object.entries(CAREER_ROLES).sort((a,b)=>b[1].demand-a[1].demand).slice(0,8);
+  document.getElementById('homeRoleList').innerHTML=roles.map(([title,info])=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <span style="font-size:13px;font-weight:500">${title}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:var(--muted2)">${info.salary}</span>
+        <span class="growth-badge ${growthClass(info.growth)}">${info.growth}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FILE UPLOAD
+// ═══════════════════════════════════════════════════════════════════════════
+const upZone=document.getElementById('uploadZone');
+upZone.addEventListener('dragover',e=>{e.preventDefault();upZone.classList.add('drag-over')});
+upZone.addEventListener('dragleave',()=>upZone.classList.remove('drag-over'));
+upZone.addEventListener('drop',e=>{e.preventDefault();upZone.classList.remove('drag-over');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0])});
+document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0])});
+document.getElementById('deptSelect').addEventListener('change',checkReady);
+
+let selFile=null;
+function handleFile(f){
+  selFile=f;
+  document.getElementById('fileChosen').textContent=`📎 ${f.name} (${(f.size/1024).toFixed(0)} KB)`;
+  checkReady();
+}
+function checkReady(){
+  document.getElementById('analyseBtn').disabled=!(selFile&&document.getElementById('deptSelect').value);
+}
+
+async function triggerAnalysis(){
+  const dept=document.getElementById('deptSelect').value;
+  currentDept=dept;
+  if(!selFile||!dept)return;
+  document.getElementById('resumeResults').innerHTML='<div class="loader"><div class="spin"></div>Extracting skills…</div>';
+  document.getElementById('topCareersCard').style.display='none';
+  document.getElementById('dreamCard').style.display='none';
+  document.getElementById('heatmapCard').style.display='none';
+  document.getElementById('projectsCard').style.display='none';
+  // upload progress anim
+  const prog=document.getElementById('upProg');const fill=document.getElementById('upFill');
+  prog.style.display='block';let p=0;
+  const tick=setInterval(()=>{p=Math.min(90,p+rnd(8,18));fill.style.width=p+'%'},150);
+
+  let result=null;
+  if(ONLINE){
+    const fd=new FormData();fd.append('file',selFile);fd.append('department',dept);
+    result=await apiPost('/api/upload-resume',fd,true);
+  }
+  if(!result)result=mockResumeAnalysis(dept);
+
+  clearInterval(tick);fill.style.width='100%';setTimeout(()=>prog.style.display='none',500);
+
+  extractedSkills=result.extracted_skills;
+  lastCareerMatches=result.top_3_careers||result.all_careers||[];
+  renderExtractedSkills(result);
+  renderTopCareers(result.top_3_careers||lastCareerMatches.slice(0,3));
+  renderProjects(result.projects||[]);
+  document.getElementById('dreamCard').style.display='block';
+  document.getElementById('heatmapCard').style.display='block';
+  initHeatmap(result.extracted_skills);
+  // Show quick stats
+  const qs=document.getElementById('resumeQuickStats');qs.style.display='block';
+  const score=result.resume_score||rnd(55,92);
+  document.getElementById('resumeScoreNum').textContent=score;
+  document.getElementById('resumeScoreBar').style.width=score+'%';
+  document.getElementById('expYearsText').textContent=result.experience_years?`${result.experience_years} years experience detected`:'';
+  addXP(100);
+  toast('Resume analysed! +100 XP','🔍');
+}
+
+function mockResumeAnalysis(dept){
+  const dSkills=DEPT_SKILLS[dept]||[];
+  const n=rnd(6,11);
+  const picked=[...dSkills].sort(()=>.5-Math.random()).slice(0,n);
+  const extracted=picked.map(s=>({skill:s,confidence:rndFloat(.55,.95),level:['Beginner','Intermediate','Expert'][rnd(0,2)],occurrences:rnd(1,4),severity:['Critical','Important','Nice-to-have'][rnd(0,2)]})).sort((a,b)=>b.confidence-a.confidence);
+  const uSkillNames=extracted.map(e=>e.skill);
+  const careers=Object.entries(CAREER_ROLES).map(([title,info])=>{
+    const pct=computeMatch(uSkillNames,info.req);
+    const missing=getMissing(uSkillNames,info.req);
+    return {title,match_percentage:pct,required_skills:info.req,missing_skills:missing,salary_range:info.salary,growth:info.growth,demand_score:info.demand};
+  }).sort((a,b)=>b.match_percentage-a.match_percentage);
+  return {filename:selFile?.name||'resume.pdf',department:dept,extracted_skills:extracted,skill_count:extracted.length,top_3_careers:careers.slice(0,3),all_careers:careers.slice(0,8),experience_years:rnd(0,5),projects:["Built a RESTful API backend using Django","Implemented ML classification pipeline with scikit-learn","Developed responsive web interface with React","Designed automated CI/CD pipeline using GitHub Actions"],resume_score:rnd(60,92)};
+}
+
+function renderExtractedSkills(data){
+  const s=data.extracted_skills;
+  const levelClass={Expert:'s-expert',Intermediate:'s-inter',Beginner:'s-begin'};
+  const levelIcon={Expert:'★★★',Intermediate:'★★',Beginner:'★'};
+  document.getElementById('resumeResults').innerHTML=`
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:16px">
+      <span style="font-size:36px;font-weight:800;font-family:var(--font-display);color:var(--blue2)">${s.length}</span>
+      <span style="color:var(--muted2);font-size:13px">skills found in <strong style="color:var(--text)">${data.department}</strong></span>
+    </div>
+    <div class="chip-row">
+      ${s.map(sk=>`<span class="stag ${levelClass[sk.level]||'s-begin'}" title="${sk.level} · ${Math.round(sk.confidence*100)}% confidence · ${sk.occurrences} mentions">
+        ${levelIcon[sk.level]||'★'} ${sk.skill} <span style="opacity:.55;font-size:9px">${Math.round(sk.confidence*100)}%</span>
+      </span>`).join('')}
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:16px">
+      <span class="stag s-expert">★★★ Expert</span>
+      <span class="stag s-inter">★★ Intermediate</span>
+      <span class="stag s-begin">★ Beginner</span>
+    </div>`;
+}
+
+function renderTopCareers(careers){
+  const el=document.getElementById('topCareers');
+  el.innerHTML=careers.map((c,i)=>{
+    const pct=c.match_percentage;
+    const clr=pct>=60?'var(--green)':pct>=35?'var(--amber)':'var(--blue2)';
+    const deg=(pct/100*360).toFixed(1);
+    const gc=growthClass(c.growth);
+    return `<div class="cc">
+      <div class="cc-ring" style="background:conic-gradient(${clr} ${deg}deg,rgba(255,255,255,.05) 0)">
+        <div class="cc-inner"><span class="cc-pct" style="color:${clr}">${pct}%</span></div>
+      </div>
+      <div class="cc-info">
+        <div class="cc-title">${['🥇','🥈','🥉'][i]} ${c.title}</div>
+        <div class="cc-meta">
+          <span style="font-size:11px;color:var(--muted2)"><i class="fas fa-indian-rupee-sign"></i> ${c.salary_range||c.salary}</span>
+          <span class="growth-badge ${gc}">${c.growth}</span>
+        </div>
+        <div class="demand-bar"><span>Demand</span><div class="db-track"><div class="db-fill" style="width:${c.demand_score||75}%"></div></div><span>${c.demand_score||75}%</span></div>
+        <div class="chip-row" style="margin-top:6px">
+          ${(c.required_skills||c.req||[]).slice(0,4).filter(s=>!(c.missing_skills||[]).includes(s)).map(s=>`<span class="stag s-expert" style="font-size:10px">✓ ${s}</span>`).join('')}
+          ${(c.missing_skills||[]).slice(0,2).map(s=>`<span class="stag s-missing" style="font-size:10px">✗ ${s}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('topCareersCard').style.display='block';
+}
+
+function renderProjects(projects){
+  if(!projects.length)return;
+  document.getElementById('projectsList').innerHTML=projects.map(p=>`
+    <div style="display:flex;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <i class="fas fa-code-branch" style="color:var(--blue2);margin-top:2px;font-size:13px;flex-shrink:0"></i>
+      <span style="font-size:13px">${p}</span>
+    </div>`).join('');
+  document.getElementById('projectsCard').style.display='block';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DREAM JOB
+// ═══════════════════════════════════════════════════════════════════════════
+async function analyzeDreamJob(){
+  const dream=document.getElementById('dreamJobInput').value.trim();
+  if(!dream){toast('Enter a dream job title','⚠️');return}
+  const skills=extractedSkills.map(s=>s.skill);
+  let result=null;
+  if(ONLINE){result=await apiPost('/api/career-recommendations',{department:currentDept,skills,dream_job:dream})}
+  if(!result)result=mockDreamAnalysis(dream,skills);
+
+  const da=result.dream_job_analysis;
+  if(!da){toast('Could not analyse dream job','❌');return}
+  renderDreamResults(da,result.learning_path||[]);
+  document.getElementById('dreamResults').style.display='block';
+  addXP(50);toast('Dream job analysed! +50 XP','✨');
+}
+
+function mockDreamAnalysis(dreamJob,userSkills){
+  const roles=Object.keys(CAREER_ROLES);
+  const dl=dreamJob.toLowerCase();
+  let best=roles[0],bScore=0;
+  roles.forEach(r=>{const sc=r.toLowerCase().split(' ').filter(w=>dl.includes(w)).length+(dl.includes(r.toLowerCase())?2:0);if(sc>bScore){bScore=sc;best=r}});
+  const info=CAREER_ROLES[best];
+  const matched=info.req.filter(s=>userSkills.map(u=>u.toLowerCase()).includes(s.toLowerCase()));
+  const missing=info.req.filter(s=>!userSkills.map(u=>u.toLowerCase()).includes(s.toLowerCase()));
+  const pct=computeMatch(userSkills,info.req);
+  const gap=missing.slice(0,6).map((s,i)=>({skill:s,current_level:rndFloat(0,35),required_level:85,priority:i<2?'Critical':i<5?'Important':'Nice-to-have',estimated_weeks:rnd(3,10)}));
+  const lp=missing.slice(0,6).map((s,i)=>({skill:s,priority:i<2?'Critical':i<5?'Important':'Nice-to-have',estimated_hours:rnd(20,60),estimated_weeks:rnd(3,8),resources:LR[s]||LR.default,certifications:CERTS[s]||CERTS.default,prerequisites:[],daily_goal_minutes:i<3?45:30}));
+  const traj=[{year:0,label:'Current State',match:pct,salary:'Fresher'},{year:.5,label:'Internship Ready',match:Math.min(100,pct+15),salary:'₹20-40k/mo'},{year:1,label:`Junior ${best}`,match:Math.min(100,pct+30),salary:info.salary.split('-')[0]+'-10 LPA'},{year:3,label:`Mid-Level ${best}`,match:100,salary:'₹12-20 LPA'},{year:6,label:`Senior ${best}`,match:100,salary:'₹20-35 LPA'}];
+  return {dream_job_analysis:{role_name:best,match_percentage:pct,matched_skills:matched,missing_skills:missing,skill_gap_analysis:gap,trajectory:traj},learning_path:lp};
+}
+
+function renderDreamResults(da,lp){
+  const pct=da.match_percentage;
+  const clr=pct>=60?'#10b981':pct>=35?'#f59e0b':'#3d7fff';
+  // Ring chart
+  const ringCanvas=document.getElementById('dreamRingChart');
+  if(ringCanvas._chart)ringCanvas._chart.destroy();
+  const rc=new Chart(ringCanvas.getContext('2d'),{type:'doughnut',data:{labels:['Match','Gap'],datasets:[{data:[pct,100-pct],backgroundColor:[clr,'rgba(255,255,255,.06)'],borderWidth:0,cutout:'72%'}]},options:{responsive:false,plugins:{legend:{display:false}}}});
+  ringCanvas._chart=rc;
+  // Draw center text manually with overlay
+  ringCanvas.parentElement.style.position='relative';
+  let ov=ringCanvas.parentElement.querySelector('.ring-ov');
+  if(!ov){ov=document.createElement('div');ov.className='ring-ov';ov.style.cssText='position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none';ringCanvas.parentElement.appendChild(ov)}
+  ov.innerHTML=`<div style="font-size:28px;font-weight:800;font-family:var(--font-display);color:${clr}">${pct}%</div><div style="font-size:10px;color:var(--muted2)">Match</div>`;
+
+  // Matched / missing
+  document.getElementById('dreamMatchedSkills').innerHTML=`<div class="sec-divider">✅ Matched Skills</div><div class="chip-row">${da.matched_skills.map(s=>`<span class="stag s-expert">${s}</span>`).join('')||'<span style="color:var(--muted2);font-size:12px">None yet</span>'}</div>`;
+  document.getElementById('dreamMissingSkills').innerHTML=`<div class="sec-divider">❌ Gap Skills</div><div class="chip-row">${da.missing_skills.map((s,i)=>`<span class="stag ${i<2?'s-crit':i<5?'s-imp':'s-nice'}">${['🔴','🔴','🟡','🟡','🟡','🟢'][i]||'🟢'} ${s}</span>`).join('')||'<span style="color:var(--green);font-size:12px">🎉 Fully matched!</span>'}</div>`;
+
+  // Radar
+  const rLabels=[...da.matched_skills,...da.missing_skills].slice(0,8);
+  const curData=rLabels.map(s=>da.matched_skills.includes(s)?rnd(65,95):rnd(5,30));
+  const reqData=rLabels.map(()=>85);
+  if(radarChart){radarChart.destroy();radarChart=null}
+  radarChart=new Chart(document.getElementById('skillRadarChart').getContext('2d'),{type:'radar',data:{labels:rLabels,datasets:[{label:'You',data:curData,borderColor:'#3d7fff',backgroundColor:'rgba(61,127,255,.18)',pointBackgroundColor:'#3d7fff',borderWidth:2},{label:'Required',data:reqData,borderColor:'#f43f5e',backgroundColor:'rgba(244,63,94,.08)',borderWidth:2,borderDash:[4,4]}]},options:{responsive:true,plugins:{legend:{labels:{color:'#8899b4',font:{size:11}}}},scales:{r:{beginAtZero:true,max:100,ticks:{color:'#5a6882',stepSize:20},grid:{color:'rgba(255,255,255,.06)'},pointLabels:{color:'#8899b4',font:{size:10}}}}}});
+
+  // Timeline
+  const tl=da.trajectory||[];
+  document.getElementById('careerTimeline').innerHTML=tl.map(t=>`
+    <div class="tl-item">
+      <div class="tl-dot">${t.year===0?'Now':t.year+'y'}</div>
+      <div class="tl-content">
+        <div class="tl-year">${t.year===0?'Today':`Year ${t.year}`}</div>
+        <div class="tl-label">${t.label}</div>
+        <div class="tl-detail">${t.salary} · ${Math.round(t.match)}% ready</div>
+      </div>
+    </div>`).join('');
+
+  // Learning path
+  document.getElementById('learningPathGrid').innerHTML=lp.map(item=>`
+    <div class="lp-card">
+      <div class="lp-icon"><i class="fas fa-graduation-cap"></i></div>
+      <h4>${item.skill}</h4>
+      <div style="margin:6px 0"><span class="stag ${item.priority==='Critical'?'s-crit':item.priority==='Important'?'s-imp':'s-nice'}">${item.priority}</span></div>
+      <div style="font-size:12px;color:var(--muted2);margin:4px 0">⏱ ${item.estimated_hours}h · ${item.estimated_weeks}w</div>
+      <div style="font-size:12px;color:var(--muted2)">🎯 ${item.daily_goal_minutes}m/day goal</div>
+      ${(item.resources||[]).map(r=>`<a class="res-link" href="${r.url||'#'}" target="_blank">📚 ${r.name||r} <span class="res-rating">${'★'.repeat(Math.round(r.rating||4))}</span></a>`).join('')}
+      ${(item.certifications||[]).slice(0,1).map(c=>`<div style="font-size:11px;color:var(--amber);margin-top:6px">🏅 ${c.name}</div>`).join('')}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SKILL HEATMAP
+// ═══════════════════════════════════════════════════════════════════════════
+function initHeatmap(skills){
+  const c=document.getElementById('heatmapContainer');c.innerHTML='';
+  const cols=6,cs=74,pad=8,W=cols*(cs+pad)+40,H=Math.ceil(skills.length/cols)*(cs+pad)+40;
+  const svg=d3.select(c).append('svg').attr('width',W).attr('height',H);
+  const tip=document.getElementById('heatmapTooltip')||document.createElement('div');
+  tip.id='heatmapTooltip';
+  if(!document.getElementById('heatmapTooltip')){tip.style.cssText='position:fixed;background:var(--ink3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:12px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:999;color:var(--text)';document.body.appendChild(tip)}
+  skills.forEach((s,i)=>{
+    const col=i%cols,row=Math.floor(i/cols),x=col*(cs+pad)+20,y=row*(cs+pad)+20;
+    const alpha=0.2+s.confidence*0.78;
+    const levelColors={'Expert':'rgba(16,185,129','Intermediate':'rgba(34,211,238','Beginner':'rgba(61,127,255'};
+    const base=levelColors[s.level]||levelColors.Beginner;
+    const g=svg.append('g').attr('transform',`translate(${x},${y})`).style('cursor','pointer');
+    g.append('rect').attr('width',cs).attr('height',cs).attr('rx',10).attr('fill',`${base},${alpha})`).attr('stroke',`${base},.3)`).attr('stroke-width',1).attr('class','hm-rect').style('transition','all .2s');
+    g.append('text').attr('x',cs/2).attr('y',cs/2-4).attr('text-anchor','middle').attr('fill','rgba(255,255,255,.9)').style('font-size','10px').style('font-weight','600').style('font-family','DM Mono,monospace').text(s.skill.length>9?s.skill.slice(0,8)+'…':s.skill);
+    g.append('text').attr('x',cs/2).attr('y',cs/2+13).attr('text-anchor','middle').attr('fill','rgba(255,255,255,.55)').style('font-size','9px').text(Math.round(s.confidence*100)+'%');
+    g.on('mouseover',evt=>{tip.textContent=`${s.skill} — ${s.level} (${Math.round(s.confidence*100)}% confidence)`;tip.style.opacity='1'})
+     .on('mousemove',evt=>{tip.style.left=evt.clientX+12+'px';tip.style.top=evt.clientY-30+'px'})
+     .on('mouseout',()=>{tip.style.opacity='0'});
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CAREERS PAGE
+// ═══════════════════════════════════════════════════════════════════════════
+function buildCareerTable(){
+  const rows=Object.entries(CAREER_ROLES).map(([title,info])=>`
+    <tr>
+      <td style="font-weight:500">${title}</td>
+      <td><div class="chip-row">${info.req.slice(0,4).map(s=>`<span class="stag s-begin" style="font-size:10px">${s}</span>`).join('')}</div></td>
+      <td style="color:var(--muted2);font-size:11.5px;white-space:nowrap">${info.salary}</td>
+      <td><span class="growth-badge ${growthClass(info.growth)}">${info.growth}</span></td>
+      <td><div class="db-track" style="width:60px"><div class="db-fill" style="width:${info.demand}%"></div></div></td>
+    </tr>`).join('');
+  document.getElementById('careerTable').innerHTML=`<table class="dt"><thead><tr><th>Role</th><th>Key Skills</th><th>Salary</th><th>Growth</th><th>Demand</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function buildTrending(dept){
+  const trends=TRENDING[dept]||TRENDING.default;
+  document.getElementById('trendingContent').innerHTML=`
+    <div class="fg"><label>Department</label><select class="inp" style="width:180px" onchange="buildTrending(this.value)">${DEPARTMENTS.map(d=>`<option ${d===dept?'selected':''}>${d}</option>`).join('')}</select></div>
+    ${trends.map(t=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <div style="font-size:13px;font-weight:500;min-width:160px">${t.skill}</div>
+      <span style="color:var(--green);font-size:12px;font-family:var(--font-mono)">${t.growth}</span>
+      <div style="flex:1;max-width:180px"><div class="db-track"><div class="db-fill" style="width:${t.demand}%"></div></div></div>
+      <span style="font-size:11px;color:var(--muted2)">${t.demand}%</span>
+    </div>`).join('')}`;
+}
+
+function buildSalaryChart(){
+  const labels=Object.keys(CAREER_ROLES).slice(0,8);
+  const maxVals=labels.map(r=>{const nums=CAREER_ROLES[r].salary.match(/\d+/g);return nums?parseInt(nums[1]||nums[0]):10});
+  const minVals=labels.map(r=>{const nums=CAREER_ROLES[r].salary.match(/\d+/g);return nums?parseInt(nums[0]):5});
+  const ctx=document.getElementById('salaryChart').getContext('2d');
+  new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Max LPA',data:maxVals,backgroundColor:'rgba(61,127,255,.7)',borderRadius:5},{label:'Min LPA',data:minVals,backgroundColor:'rgba(139,92,246,.5)',borderRadius:5}]},options:{responsive:true,plugins:{legend:{labels:{color:'#8899b4'}}},scales:{x:{ticks:{color:'#5a6882',maxRotation:45},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#5a6882'},grid:{color:'rgba(255,255,255,.04)'},title:{display:true,text:'LPA',color:'#5a6882'}}}}});
+}
+
+function updateGapHints(){
+  const dept=document.getElementById('gapDept').value;
+  if(dept)document.getElementById('gapSkills').placeholder=(DEPT_SKILLS[dept]||[]).slice(0,4).join(', ')+'…';
+}
+
+async function runGapCheck(){
+  const dept=document.getElementById('gapDept').value;
+  const role=document.getElementById('gapRole').value;
+  const skills=document.getElementById('gapSkills').value.split(',').map(s=>s.trim()).filter(Boolean);
+  let result=await apiPost('/api/skill-gap-analysis',{user_id:1,career_id:0,current_skills:skills,target_role:role});
+  if(!result){
+    const info=CAREER_ROLES[role];
+    const missing=getMissing(skills,info.req);
+    const pct=computeMatch(skills,info.req);
+    result={target_role:role,match_percentage:pct,missing_skills:missing,salary_range:info.salary,growth:info.growth};
+  }
+  const clr=result.match_percentage>=60?'var(--green)':result.match_percentage>=35?'var(--amber)':'var(--red)';
+  document.getElementById('gapResult').innerHTML=`
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:42px;font-weight:800;font-family:var(--font-display);color:${clr}">${result.match_percentage}%</div>
+      <div style="color:var(--muted2);font-size:12px">match with ${role}</div>
+      <div class="progress" style="margin-top:10px"><div class="pf pf-blue" style="width:${result.match_percentage}%"></div></div>
+    </div>
+    <div class="sec-divider">Missing Skills</div>
+    <div class="chip-row">${(result.missing_skills||[]).map(s=>`<span class="stag s-missing">${s}</span>`).join('')||'<span style="color:var(--green)">None — ready!</span>'}</div>`;
+}
+
+function loadInterviewQuestions(){
+  const role=document.getElementById('interviewRole').value;
+  const info=CAREER_ROLES[role]||{req:[]};
+  const allQ=[];
+  info.req.slice(0,4).forEach(skill=>{(INTERVIEW_QS[skill]||INTERVIEW_QS.default).slice(0,2).forEach(q=>allQ.push({q,skill}))});
+  document.getElementById('interviewQuestions').innerHTML=allQ.slice(0,10).map((item,i)=>`
+    <div class="q-card">
+      <div class="q-num">Q${i+1} · ${item.skill}</div>
+      <div class="q-text">${item.q}</div>
+    </div>`).join('');
+}
+
+function loadCerts(){
+  const skill=document.getElementById('certSkill').value;
+  const certs=(CERTS[skill]||CERTS.default);
+  document.getElementById('certResults').innerHTML=certs.map(c=>`
+    <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="font-weight:600;font-size:13px;margin-bottom:4px">🏅 ${c.name}</div>
+      <div style="font-size:12px;color:var(--muted2)">${c.provider} · ${c.level} · ${c.cost}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LEARNING PAGE
+// ═══════════════════════════════════════════════════════════════════════════
+async function logSession(){
+  const skill=document.getElementById('sessionSkill').value;
+  const mins=parseInt(document.getElementById('sessionMins').value)||30;
+  const tech=document.getElementById('sessionTech').value;
+  let result=await apiPost('/api/study-session',{user_id:1,skill,duration_minutes:mins,technique:tech,difficulty:parseInt(document.getElementById('sessionDiff').value)});
+  const xp=result?.xp_earned||(tech==='pomodoro'?Math.round(mins*1.5*1.3):Math.round(mins*1.5));
+  addXP(xp);
+  userHours=parseFloat((userHours+mins/60).toFixed(1));
+  document.getElementById('hoursDisplay').textContent=userHours;
+  toast(`Session logged! +${xp} XP 🎯`,'⚡');
+}
+
+async function generatePlan(){
+  const dept=document.getElementById('planDept').value;
+  const role=document.getElementById('planRole').value;
+  const weeks=parseInt(document.getElementById('planWeeks').value)||12;
+  const skills=document.getElementById('planSkills').value.split(',').map(s=>s.trim()).filter(Boolean);
+  let result=await apiPost('/api/generate-plan',{user_id:1,department:dept,current_skills:skills,target_role:role,weeks_available:weeks});
+  if(!result){
+    const info=CAREER_ROLES[role]||{req:[]};
+    const missing=getMissing(skills,info.req);
+    const plan=missing.slice(0,weeks).map((s,i)=>({week:i+1,focus_skill:s,tasks:['Study resources','Practice exercises'],hours:rnd(8,15),daily_goal:30}));
+    result={weekly_plan:plan,target_role:role,total_weeks:weeks,completion_date:'Coming soon',readiness_score:computeMatch(skills,info.req)};
+  }
+  const wp=result.weekly_plan||[];
+  document.getElementById('planResult').innerHTML=`
+    <div style="margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap">
+      <div class="stag s-inter">🎯 ${role}</div>
+      <div class="stag s-begin">📅 ${result.completion_date}</div>
+      <div class="stag s-expert">✅ ${result.readiness_score||0}% ready</div>
+    </div>
+    ${wp.map(w=>`<div style="display:flex;gap:10px;align-items:start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <div style="width:48px;flex-shrink:0;font-family:var(--font-mono);font-size:11px;color:var(--blue2)">W${w.week}</div>
+      <div style="font-size:13px;font-weight:500;flex:1">${w.focus_skill}</div>
+      <div style="font-size:11px;color:var(--muted2)">${w.hours||rnd(5,12)}h · ${w.daily_goal||30}m/day</div>
+    </div>`).join('')}`;
+}
+
+function startQuiz(){
+  const skill=document.getElementById('quizSkill').value;
+  const diff=document.getElementById('quizDiff').value;
+  const questions=(INTERVIEW_QS[skill]||INTERVIEW_QS.default).slice(0,5);
+  document.getElementById('quizContainer').innerHTML=`<div class="sec-divider">${skill} Quiz</div>`+questions.map((q,i)=>`
+    <div class="q-card">
+      <div class="q-num">Q${i+1} · ${diff.toUpperCase()}</div>
+      <div class="q-text">${q}</div>
+      <textarea class="inp" style="min-height:60px;margin-top:8px" placeholder="Your answer…"></textarea>
+    </div>`).join('')+
+    `<button class="btn btn-violet btn-sm" onclick="submitQuiz()" style="margin-top:8px"><i class="fas fa-check"></i> Submit</button>`;
+}
+
+function submitQuiz(){
+  addXP(75);toast('Quiz submitted! +75 XP','🧠');
+  document.getElementById('quizContainer').innerHTML='<div class="empty"><i class="fas fa-check-circle" style="color:var(--green)"></i><p>Great work! +75 XP earned</p></div>';
+}
+
+let activityChartInst=null;
+function initActivityChart(){
+  const ctx=document.getElementById('activityChart').getContext('2d');
+  const labels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const data=labels.map(()=>rnd(0,3));
+  activityChartInst=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Study Hours',data,backgroundColor:'rgba(61,127,255,.6)',borderRadius:5},{label:'XP/100',data:data.map(v=>v*rnd(30,60)/100),backgroundColor:'rgba(139,92,246,.5)',borderRadius:5}]},options:{responsive:true,plugins:{legend:{labels:{color:'#8899b4'}}},scales:{x:{ticks:{color:'#5a6882'},grid:{display:false}},y:{ticks:{color:'#5a6882'},grid:{color:'rgba(255,255,255,.04)'}}}}});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// POMODORO
+// ═══════════════════════════════════════════════════════════════════════════
+function setPomMode(mins,label){
+  pomCtrl('reset');pomSeconds=mins*60;pomMode=label.toLowerCase().replace(' ','-');
+  document.getElementById('pomLabel').textContent=label;
+  updatePomDisplay();
+}
+
+function pomCtrl(action){
+  if(action==='start'){if(!pomRunning){pomRunning=true;pomTimer=setInterval(tickPom,1000);document.getElementById('pomStartBtn').innerHTML='<i class="fas fa-pause"></i> Running'}}
+  else if(action==='pause'){pomRunning=false;clearInterval(pomTimer);document.getElementById('pomStartBtn').innerHTML='<i class="fas fa-play"></i> Resume'}
+  else if(action==='reset'){pomRunning=false;clearInterval(pomTimer);const isWork=!pomMode.includes('break');pomSeconds=isWork?25*60:5*60;updatePomDisplay();document.getElementById('pomStartBtn').innerHTML='<i class="fas fa-play"></i> Start'}
+}
+
+function tickPom(){
+  pomSeconds--;
+  if(pomSeconds<=0){
+    pomRunning=false;clearInterval(pomTimer);
+    pomSessionsToday++;document.getElementById('pomSessions').textContent=pomSessionsToday;
+    addXP(25);toast('Pomodoro complete! +25 XP 🍅','🍅');
+    pomSeconds=5*60;document.getElementById('pomLabel').textContent='Break';
+  }
+  updatePomDisplay();
+}
+
+function updatePomDisplay(){
+  const m=Math.floor(pomSeconds/60).toString().padStart(2,'0');
+  const s=(pomSeconds%60).toString().padStart(2,'0');
+  document.getElementById('pomTime').textContent=`${m}:${s}`;
+  const total=pomMode.includes('break')?(pomMode.includes('long')?15:5)*60:25*60;
+  const progress=(total-pomSeconds)/total;
+  const circ=2*Math.PI*60;
+  document.getElementById('pomCircle').style.strokeDashoffset=(circ*(1-progress)).toFixed(1);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BURNOUT
+// ═══════════════════════════════════════════════════════════════════════════
+function liveUpdateBurnout(){
+  const wh=+document.getElementById('workHours').value;
+  const sh=+document.getElementById('sleepHours').value;
+  const ex=+document.getElementById('exerciseDays').value;
+  const sl=+document.getElementById('stressLevel').value;
+  const sat=+document.getElementById('satisfactionScore').value;
+  let score=0;
+  score+=Math.max(0,wh-8)*5;score+=Math.max(0,7-sh)*8;score+=Math.max(0,4-ex)*3;score+=sl*4;score+=(10-sat)*3;
+  score=Math.min(100,score);
+  const level=score<30?'Low':score<60?'Moderate':'High';
+  const clr=level==='Low'?'var(--green)':level==='Moderate'?'var(--amber)':'var(--red)';
+  const icons={Low:'😊',Moderate:'😐',High:'😰'};
+  document.getElementById('burnoutResult').innerHTML=`
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:48px;margin-bottom:8px">${icons[level]}</div>
+      <div class="burnout-score" style="color:${clr}">${Math.round(score)}</div>
+      <div style="font-size:14px;font-weight:600;color:${clr};margin:4px 0">${level} Risk</div>
+      <div class="progress" style="margin:10px auto;max-width:240px"><div class="pf" style="width:${score}%;background:${clr}"></div></div>
+    </div>`;
+}
+
+async function checkBurnout(){
+  const payload={work_hours:+document.getElementById('workHours').value,sleep_hours:+document.getElementById('sleepHours').value,exercise_days:+document.getElementById('exerciseDays').value,stress_level:+document.getElementById('stressLevel').value,satisfaction_score:+document.getElementById('satisfactionScore').value,user_id:1};
+  let result=await apiPost('/api/burnout-risk',payload);
+  if(!result){
+    let s=0;s+=Math.max(0,payload.work_hours-8)*5;s+=Math.max(0,7-payload.sleep_hours)*8;s+=Math.max(0,4-payload.exercise_days)*3;s+=payload.stress_level*4;s+=(10-payload.satisfaction_score)*3;s=Math.min(100,s);
+    const lv=s<30?'Low':s<60?'Moderate':'High';
+    const tips={Low:["Maintain healthy habits 🌱","Schedule regular breaks","Stay connected with peers","Continue good sleep hygiene"],Moderate:["Reduce overtime gradually","Prioritise 7-8h sleep","Add 2 exercise sessions/week","Try 5-min daily meditation"],High:["Immediately reduce workload ⚠️","Consult a wellness counsellor","Take at least 1 full rest day/week","Practice mindfulness daily","Disconnect after 7pm"]};
+    result={burnout_score:parseFloat(s.toFixed(1)),risk_level:lv,recommendations:tips[lv],wellness_score:parseFloat((100-s).toFixed(1))};
+  }
+  const clr=result.risk_level==='Low'?'var(--green)':result.risk_level==='Moderate'?'var(--amber)':'var(--red)';
+  const icons={Low:'😊',Moderate:'😐',High:'😰'};
+  document.getElementById('burnoutResult').innerHTML=`
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:48px;margin-bottom:8px">${icons[result.risk_level]}</div>
+      <div class="burnout-score" style="color:${clr}">${result.burnout_score}</div>
+      <div style="font-size:15px;font-weight:600;color:${clr};margin:4px 0">${result.risk_level} Risk</div>
+      <div class="progress" style="margin:10px auto;max-width:240px"><div class="pf" style="width:${result.burnout_score}%;background:${clr}"></div></div>
+      <div style="font-size:12px;color:var(--muted2);margin-top:8px">Wellness Score: <span style="color:${clr}">${result.wellness_score}</span>/100</div>
+    </div>
+    <div class="sec-divider">💡 Recommendations</div>
+    ${result.recommendations.map(r=>`<div class="trend-item"><i class="fas fa-circle-check" style="color:${clr};font-size:13px;flex-shrink:0"></i>${r}</div>`).join('')}`;
+  // update history
+  burnoutHistData.push(result.burnout_score);
+  if(burnoutHistData.length>14)burnoutHistData.shift();
+  initBurnoutChart();
+  buildWellnessTips(result.risk_level);
+  toast(`Burnout assessed: ${result.risk_level} Risk`,'💚');
+}
+
+let burnoutHistChartInst=null;
+function initBurnoutChart(){
+  const ctx=document.getElementById('burnoutHistChart');if(!ctx)return;
+  if(burnoutHistChartInst)burnoutHistChartInst.destroy();
+  const labels=burnoutHistData.map((_,i)=>`Day ${burnoutHistData.length-i}`).reverse();
+  burnoutHistChartInst=new Chart(ctx.getContext('2d'),{type:'line',data:{labels:[...labels].reverse(),datasets:[{label:'Burnout Score',data:[...burnoutHistData],borderColor:'#f43f5e',backgroundColor:'rgba(244,63,94,.1)',tension:.4,fill:true,pointRadius:3}]},options:{responsive:true,plugins:{legend:{labels:{color:'#8899b4'}}},scales:{x:{ticks:{color:'#5a6882'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#5a6882'},grid:{color:'rgba(255,255,255,.04)'},min:0,max:100}}}});
+}
+
+function buildWellnessTips(level){
+  const tips={Low:["🧘 Continue your daily mindfulness practice","💤 Maintain 7-8 hours of sleep","🏃 Keep up your exercise routine","👥 Invest time in social connections"],Moderate:["😴 Prioritise sleep — aim for 7+ hours","🧘 Try a 10-minute meditation app","📵 Set phone-free hours after 8pm","🚶 Take a 20-min walk daily"],High:["🚨 Take a break — your health matters most","🩺 Consider speaking to a counsellor","🌴 Plan a short break or staycation","📵 Digital detox for at least 2 hours/day","🤝 Connect with supportive friends"]};
+  const el=document.getElementById('wellnessTips');if(!el)return;
+  el.innerHTML=(tips[level]||tips.Low).map(t=>`<div class="trend-item"><span style="font-size:18px">${t.slice(0,2)}</span><span>${t.slice(2)}</span></div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SIMULATE
+// ═══════════════════════════════════════════════════════════════════════════
+async function runSimulation(){
+  const dept=document.getElementById('simDept').value;
+  const role=document.getElementById('simRole').value;
+  const current=document.getElementById('simCurrentSkills').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const adding=document.getElementById('simAddSkills').value.split(',').map(s=>s.trim()).filter(Boolean);
+  let result=await apiPost('/api/simulate-score',{department:dept,skills:current,target_role:role,additional_skills:adding});
+  if(!result){
+    const info=CAREER_ROLES[role]||{req:[]};
+    const cur=computeMatch(current,info.req);
+    const combined=[...new Set([...current,...adding])];
+    const nw=computeMatch(combined,info.req);
+    result={current_match:cur,simulated_match:nw,improvement:parseFloat((nw-cur).toFixed(1)),target_role:role,new_skills_added:adding,still_missing:getMissing(combined,info.req)};
+  }
+  const imp=result.improvement>0;
+  const impClr=imp?'var(--green)':'var(--muted2)';
+  document.getElementById('simResult').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <div style="text-align:center;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:20px">
+        <div class="label-xs" style="margin-bottom:6px">Current Match</div>
+        <div style="font-size:38px;font-weight:800;font-family:var(--font-display);color:var(--blue2)">${result.current_match}%</div>
+        <div class="progress" style="margin-top:10px"><div class="pf pf-blue" style="width:${result.current_match}%"></div></div>
+      </div>
+      <div style="text-align:center;background:rgba(255,255,255,.03);border:1px solid ${imp?'rgba(16,185,129,.3)':'var(--border)'};border-radius:12px;padding:20px">
+        <div class="label-xs" style="margin-bottom:6px">After Adding Skills</div>
+        <div style="font-size:38px;font-weight:800;font-family:var(--font-display);color:${impClr}">${result.simulated_match}%</div>
+        <div class="progress" style="margin-top:10px"><div class="pf pf-green" style="width:${result.simulated_match}%"></div></div>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:30px;font-weight:800;color:${impClr}">${imp?`↑ +${result.improvement}% improvement!`:'No change'}</div>
+    ${result.still_missing?.length?`<div class="sec-divider">Still Missing</div><div class="chip-row">${result.still_missing.map(s=>`<span class="stag s-missing">${s}</span>`).join('')}</div>`:''}
+    ${adding.length?`<div class="sec-divider">Skills Added</div><div class="chip-row">${adding.map(s=>`<span class="stag s-expert">${s}</span>`).join('')}</div>`:''}`;
+  toast(`Simulation complete! +${result.improvement>0?result.improvement:0}% boost`,'⚗️');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 3D UNIVERSE
+// ═══════════════════════════════════════════════════════════════════════════
+function initUniverse(){
+  if(universeScene){updateUniverseDetails();return}
+  const container=document.getElementById('skillUniverse');
+  const W=container.clientWidth,H=container.clientHeight||420;
+  universeScene=new THREE.Scene();
+  universeCamera=new THREE.PerspectiveCamera(60,W/H,.1,1000);
+  universeCamera.position.set(0,0,28);
+  universeRenderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  universeRenderer.setSize(W,H);
+  universeRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  container.appendChild(universeRenderer.domElement);
+
+  // Ambient + point lights
+  universeScene.add(new THREE.AmbientLight(0xffffff,.5));
+  const pl=new THREE.PointLight(0x3d7fff,2,50);pl.position.set(0,0,10);universeScene.add(pl);
+
+  // Build nodes
+  const allSkills=Object.entries(DEPT_SKILLS);
+  const deptColors={'CSE':0x3d7fff,'IT':0x8b5cf6,'ECE':0x22d3ee,'MECH':0xf59e0b,'CIVIL':0x10b981,'AI&DS':0xf43f5e,'AI&ML':0xec4899,'EEE':0xfbbf24};
+  const nodes=[];
+  allSkills.forEach(([dept,skills])=>{
+    const deptColor=deptColors[dept]||0xffffff;
+    skills.slice(0,10).forEach((skill,i)=>{
+      const theta=Math.random()*Math.PI*2,phi=Math.acos(2*Math.random()-1);
+      const r=8+Math.random()*8;
+      const x=r*Math.sin(phi)*Math.cos(theta),y=r*Math.sin(phi)*Math.sin(theta),z=r*Math.cos(phi);
+      const size=0.15+Math.random()*0.25;
+      const geo=new THREE.SphereGeometry(size,8,8);
+      const mat=new THREE.MeshPhongMaterial({color:deptColor,shininess:80,transparent:true,opacity:.85});
+      const mesh=new THREE.Mesh(geo,mat);
+      mesh.position.set(x,y,z);
+      mesh.userData={skill,dept,color:deptColor};
+      universeScene.add(mesh);
+      nodes.push(mesh);
+    });
+  });
+
+  // Connections between nearby nodes
+  const lineMat=new THREE.LineBasicMaterial({color:0x3d7fff,transparent:true,opacity:.08});
+  nodes.slice(0,40).forEach((n,i)=>{
+    nodes.slice(i+1,i+3).forEach(m=>{
+      const geo=new THREE.BufferGeometry().setFromPoints([n.position,m.position]);
+      universeScene.add(new THREE.Line(geo,lineMat));
+    });
+  });
+
+  // Orbit controls (manual implementation)
+  let dragging=false,lastX=0,lastY=0,rotX=0,rotY=0,zoom=28;
+  const dom=universeRenderer.domElement;
+  dom.addEventListener('mousedown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY});
+  dom.addEventListener('mousemove',e=>{if(!dragging)return;rotY+=(e.clientX-lastX)*.008;rotX+=(e.clientY-lastY)*.008;lastX=e.clientX;lastY=e.clientY});
+  dom.addEventListener('mouseup',()=>dragging=false);
+  dom.addEventListener('wheel',e=>{zoom=Math.max(8,Math.min(50,zoom+e.deltaY*.05));universeCamera.position.setLength(zoom)},{passive:true});
+
+  function animate(){
+    universeAnimId=requestAnimationFrame(animate);
+    universeScene.rotation.y+=dragging?0:.001;
+    universeScene.rotation.x=rotX;
+    universeScene.rotation.y+=rotY;
+    rotY*=.95;rotX*=.95;
+    nodes.forEach(n=>{const s=1+.04*Math.sin(Date.now()*.001+n.position.x);n.scale.setScalar(s)});
+    universeRenderer.render(universeScene,universeCamera);
+  }
+  animate();
+  updateUniverseDetails();
+}
+
+function updateUniverseDetails(){
+  const trend=Object.values(TRENDING)[0]||TRENDING.default;
+  document.getElementById('universeDetails').innerHTML=trend.slice(0,4).map(t=>`
+    <div class="card" style="padding:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">${t.skill}</div>
+      <div style="color:var(--green);font-size:12px;font-family:var(--font-mono)">${t.growth}</div>
+      <div class="progress" style="margin-top:8px"><div class="pf pf-blue" style="width:${t.demand}%"></div></div>
+    </div>`).join('');
+}
+
+function filterUniverse(){const dept=document.getElementById('universeFilter').value;updateUniverseDetails()}
+function resetUniverse(){if(universeScene)universeScene.rotation.set(0,0,0)}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SOCIAL
+// ═══════════════════════════════════════════════════════════════════════════
+function buildMentors(){
+  document.getElementById('mentorGrid').innerHTML=MENTORS.map(m=>`
+    <div class="mentor-card">
+      <div class="mentor-avatar">${m.av}</div>
+      <div style="font-size:13px;font-weight:600">${m.name}</div>
+      <div style="font-size:11px;color:var(--muted2);margin:2px 0">${m.role}</div>
+      <div style="font-size:11px;color:var(--muted2)">${m.co} · ${m.exp}y exp</div>
+      <div class="mentor-stars" style="margin:6px 0">${'★'.repeat(Math.round(m.rating))} <span style="color:var(--muted2);font-size:10px">${m.rating}</span></div>
+      <div class="chip-row" style="justify-content:center;margin-bottom:10px">${m.skills.slice(0,2).map(s=>`<span class="stag s-begin" style="font-size:10px">${s}</span>`).join('')}</div>
+      <button class="btn btn-primary btn-sm" onclick="requestMentor(${m.id},'${m.name}')"><i class="fas fa-handshake"></i> Connect</button>
+    </div>`).join('');
+}
+
+async function requestMentor(id,name){
+  await apiPost('/api/mentor-request',{user_id:1,mentor_id:id,message:`Hi ${name}, I'd love your guidance!`,preferred_time:'Flexible',topic:'Career Guidance'});
+  toast(`Request sent to ${name}! 🤝`,'✅');addXP(20);
+}
+
+async function loadLeaderboard(){
+  const dept=document.getElementById('lbDept')?.value||'CSE';
+  let result=await apiGet(`/api/leaderboard/${dept}`);
+  const data=result?.leaderboard||[{rank:1,name:"Ananya R.",xp:4820,streak:32,badges:12},{rank:2,name:"Karthik M.",xp:4510,streak:28,badges:10},{rank:3,name:"Divya S.",xp:4200,streak:21,badges:9},{rank:4,name:"Rohan P.",xp:3980,streak:18,badges:8},{rank:5,name:"Preethi K.",xp:3750,streak:15,badges:7}];
+  document.getElementById('leaderboardList').innerHTML=data.map(row=>{
+    const rc=['rank-1','rank-2','rank-3'][row.rank-1]||'';
+    return `<div class="lb-row">
+      <div class="lb-rank ${rc}">${row.rank===1?'🥇':row.rank===2?'🥈':row.rank===3?'🥉':row.rank}</div>
+      <div style="flex:1;font-size:13px;font-weight:500">${row.name}</div>
+      <div style="font-size:12px;font-family:var(--font-mono);color:var(--violet)">⚡ ${row.xp}</div>
+      <div style="font-size:11px;color:var(--amber)">🔥 ${row.streak}d</div>
+      <div style="font-size:11px;color:var(--muted2)">🏅 ${row.badges}</div>
+    </div>`;}).join('');
+}
+
+function buildStudyGroups(){
+  document.getElementById('studyGroups').innerHTML=STUDY_GROUPS.map(g=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <div>
+        <div style="font-size:13px;font-weight:500">${g.split('—')[0].trim()}</div>
+        <div style="font-size:11px;color:var(--muted2)">${g.split('—')[1]?.trim()}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="toast('Joined! 🎉','✅')"><i class="fas fa-plus"></i> Join</button>
+    </div>`).join('');
+}
+
+function buildSuccessStories(){
+  document.getElementById('successStories').innerHTML=SUCCESS_STORIES.map(s=>`
+    <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;gap:14px">
+      <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--violet));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">${s.avatar}</div>
+      <div>
+        <div style="font-size:13px;font-weight:600">${s.name} <span class="stag s-inter" style="font-size:10px">${s.dept}</span></div>
+        <div style="font-size:12.5px;color:var(--muted2);margin:4px 0;line-height:1.5">${s.story}</div>
+        <div style="font-size:12px;color:var(--green);font-weight:600">${s.salary}</div>
+      </div>
+    </div>`).join('');
+}
+
+function loadSocialContent(){buildMentors();buildStudyGroups();buildSuccessStories()}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JOBS
+// ═══════════════════════════════════════════════════════════════════════════
+async function searchJobs(){
+  const role=document.getElementById('jobRole').value;
+  const loc=document.getElementById('jobLocation').value||'Bangalore';
+  let result=await apiGet(`/api/jobs/${encodeURIComponent(role)}/${encodeURIComponent(loc)}`);
+  const companies=["Google","Microsoft","Amazon","Flipkart","Zomato","Razorpay","CRED","PhonePe","Swiggy","Meesho"];
+  const jobs=result?.jobs||Array.from({length:6},(_,i)=>({id:i+1,title:role,company:companies[i%companies.length],location:loc,salary:`₹${rnd(6,25)} LPA`,match_percentage:rnd(55,95),posted_days_ago:rnd(1,14),type:['Full-time','Hybrid','Remote'][rnd(0,2)],apply_url:'https://linkedin.com'}));
+  document.getElementById('jobCount').textContent=`${jobs.length} results`;
+  document.getElementById('jobGrid').innerHTML=jobs.map(j=>`
+    <div class="job-card">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+        <div><div style="font-size:13px;font-weight:600">${j.title}</div><div class="job-co">${j.company} · ${j.location}</div></div>
+        <div class="job-match" style="font-size:18px">${j.match_percentage}%</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <span class="stag s-inter" style="font-size:10px">💰 ${j.salary}</span>
+        <span class="stag s-begin" style="font-size:10px">${j.type}</span>
+        <span class="stag s-begin" style="font-size:10px;color:var(--muted2)">${j.posted_days_ago}d ago</span>
+      </div>
+      <a href="${j.apply_url}" target="_blank" class="btn btn-primary btn-sm" style="text-decoration:none"><i class="fas fa-external-link-alt"></i> Apply</a>
+    </div>`).join('');
+  toast(`${jobs.length} jobs found!`,'💼');
+}
+</script>
+</body>
+</html>
