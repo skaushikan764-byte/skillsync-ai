@@ -10,6 +10,132 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+// ============================================
+// CONFIGURATION - Loaded from environment
+// ============================================
+window.SKILLSYNC_CONFIG = {
+    // Backend API URL - will be overridden by Netlify env var
+    API_BACKEND_URL: 'https://skillsync-ai-ras2.onrender.com/api',
+    
+    // Feature flags
+    features: {
+        careerTrends: true,
+        jobPortal: true,
+        skillAnalysis: true,
+        wellbeingMonitor: true,
+        simulations: true,
+        liveData: false
+    },
+    
+    // App settings
+    appVersion: '4.0.0',
+    debugMode: false,
+    apiTimeout: 30000,
+    demoMode: true,
+    
+    // Career database settings
+    salaryRange: { min: 4, max: 30, currency: 'LPA' }
+};
+
+// Check for Netlify environment variables
+if (typeof Netlify !== 'undefined' && Netlify.env) {
+    try {
+        if (Netlify.env.VITE_API_BACKEND_URL) {
+            window.SKILLSYNC_CONFIG.API_BACKEND_URL = Netlify.env.VITE_API_BACKEND_URL;
+            window.SKILLSYNC_CONFIG.demoMode = false;
+            window.SKILLSYNC_CONFIG.features.liveData = true;
+        }
+        if (Netlify.env.VITE_DEBUG_MODE === 'true') {
+            window.SKILLSYNC_CONFIG.debugMode = true;
+        }
+        if (Netlify.env.VITE_DEMO_MODE === 'true') {
+            window.SKILLSYNC_CONFIG.demoMode = true;
+        }
+    } catch (e) {
+        console.warn('Could not load Netlify env vars:', e);
+    }
+}
+
+// Also check for local config file (config.js)
+if (window.LOCAL_CONFIG) {
+    Object.assign(window.SKILLSYNC_CONFIG, window.LOCAL_CONFIG);
+}
+
+console.log('🔧 SkillSync Config:', window.SKILLSYNC_CONFIG);
+
+// ============================================
+// API CLIENT
+// ============================================
+const API = {
+    async get(endpoint) {
+        if (window.SKILLSYNC_CONFIG.demoMode) {
+            console.log(`📡 Demo mode: skipping API call to ${endpoint}`);
+            return null;
+        }
+        
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), window.SKILLSYNC_CONFIG.apiTimeout);
+            
+            const response = await fetch(`${window.SKILLSYNC_CONFIG.API_BACKEND_URL}${endpoint}`, {
+                signal: controller.signal,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.warn(`API call failed to ${endpoint}:`, error.message);
+            if (window.SKILLSYNC_CONFIG.debugMode) {
+                toast(`API Error: ${error.message}`, '⚠️');
+            }
+            return null;
+        }
+    },
+    
+    async post(endpoint, data) {
+        if (window.SKILLSYNC_CONFIG.demoMode) {
+            console.log(`📡 Demo mode: skipping API post to ${endpoint}`, data);
+            return null;
+        }
+        
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), window.SKILLSYNC_CONFIG.apiTimeout);
+            
+            const response = await fetch(`${window.SKILLSYNC_CONFIG.API_BACKEND_URL}${endpoint}`, {
+                method: 'POST',
+                signal: controller.signal,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.warn(`API post failed to ${endpoint}:`, error.message);
+            return null;
+        }
+    }
+};
+</script>
 <style>
 /* ═══════════════════════════ TOKENS ═══════════════════════════ */
 :root{
@@ -466,7 +592,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 <div class="toast-wrap" id="toasts"></div>
 
 <!-- DEMO BAR -->
-<div class="demo-bar" id="demoBar"><i class="fas fa-circle-info"></i> Interactive Demo — All data is user-input driven</div>
+<div class="demo-bar" id="demoBar">
+  <i class="fas fa-circle-info"></i> 
+  <span id="demoBarText">Interactive Demo — All data is user-input driven</span>
+  <span id="apiStatus" style="margin-left:auto;font-size:10px;font-family:monospace"></span>
+</div>
 
 <!-- NAV -->
 <nav>
@@ -487,7 +617,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <button class="nav-btn" id="nb-social" onclick="showPage('social')"><i class="fas fa-users"></i><span>Social</span></button>
   </div>
   <div class="nav-right">
-    <div class="conn-badge conn-demo" id="connBadge"><span class="conn-dot"></span><span>INTERACTIVE</span></div>
+    <div class="conn-badge" id="connBadge">
+      <span class="conn-dot"></span>
+      <span id="connBadgeText">INTERACTIVE</span>
+    </div>
     <div class="xp-pill" id="xpPill">⚡ <span id="xpDisplay">0</span> XP</div>
   </div>
 </nav>
@@ -777,9 +910,36 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 </main>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
+// CONFIGURATION UPDATE
+// ============================================
+// Update UI based on config
+function updateConfigUI() {
+    const config = window.SKILLSYNC_CONFIG;
+    const demoBar = document.getElementById('demoBar');
+    const demoBarText = document.getElementById('demoBarText');
+    const connBadge = document.getElementById('connBadge');
+    const connBadgeText = document.getElementById('connBadgeText');
+    const apiStatus = document.getElementById('apiStatus');
+    
+    if (config.demoMode) {
+        demoBar.style.display = 'flex';
+        demoBarText.textContent = 'Interactive Demo — All data is user-input driven';
+        connBadge.className = 'conn-badge conn-demo';
+        connBadgeText.textContent = 'INTERACTIVE';
+        apiStatus.textContent = '';
+    } else {
+        demoBar.style.display = config.features.liveData ? 'none' : 'flex';
+        demoBarText.textContent = config.features.liveData ? 'Live Mode — Connected to Backend' : 'Offline Mode — Using demo data';
+        connBadge.className = config.features.liveData ? 'conn-badge conn-live' : 'conn-badge conn-demo';
+        connBadgeText.textContent = config.features.liveData ? 'LIVE' : 'DEMO';
+        apiStatus.textContent = config.features.liveData ? '🟢 API Connected' : '';
+    }
+}
+
+// ============================================
 // ENHANCED QUIZ BANK - 10 Easy, 10 Medium, 5 Hard for each skill
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 const QUIZ_BANK = {
   Python: {
     easy: [
@@ -949,9 +1109,9 @@ const QUIZ_BANK = {
 };
 QUIZ_BANK.default = QUIZ_BANK.Python;
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // CAREER ROLES DATABASE
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 const CAREER_ROLES = {
   "Software Engineer": {req:["Python","Java","Data Structures","Algorithms","SQL","Git"],salary:"6-15 LPA",growth:"High",demand:92},
   "Data Scientist": {req:["Python","Machine Learning","Statistics","SQL","Data Visualization"],salary:"8-20 LPA",growth:"Very High",demand:96},
@@ -964,14 +1124,14 @@ const CAREER_ROLES = {
   "Cybersecurity Analyst": {req:["Networking","Linux","Security","Python","SIEM"],salary:"7-16 LPA",growth:"Very High",demand:93}
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // DEPARTMENTS
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 const DEPARTMENTS = ["CSE","IT","ECE","MECH","CIVIL","AI&DS","AI&ML","EEE"];
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // MENTORS
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 const MENTORS = [
   {id:1,name:"Arjun Sharma",role:"Senior ML Engineer",co:"Google",exp:8,skills:["Python","ML","TensorFlow"],rating:4.9,av:"AS"},
   {id:2,name:"Priya Nair",role:"Data Scientist",co:"Microsoft",exp:6,skills:["Python","Statistics","Tableau"],rating:4.8,av:"PN"},
@@ -979,9 +1139,9 @@ const MENTORS = [
   {id:4,name:"Sneha Kulkarni",role:"Frontend Architect",co:"Flipkart",exp:7,skills:["React","Vue.js","TypeScript"],rating:4.9,av:"SK"}
 ];
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // UTILITY FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 let userXP = 0;
 let userLevel = 1;
 let userStreak = 0;
@@ -1057,9 +1217,9 @@ function switchTab(evt, group, panelId) {
   document.getElementById(panelId).classList.add('active');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // RESUME PAGE (User Input)
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 function analyzeUserSkills() {
   const skillsStr = document.getElementById('userSkillsInput').value;
   const skills = skillsStr.split(',').map(s => s.trim()).filter(Boolean);
@@ -1130,9 +1290,9 @@ function analyzeUserSkills() {
   toast('Skills analyzed! +25 XP', '📊');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // CAREERS PAGE
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 function buildCareerTable() {
   const rows = Object.entries(CAREER_ROLES).map(([title, info]) => `
     <tr>
@@ -1183,9 +1343,9 @@ function analyzeGap() {
   addXP(10);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // WELLBEING PAGE
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 function assessBurnout() {
   const work = parseInt(document.getElementById('workHours').value);
   const sleep = parseInt(document.getElementById('sleepHours').value);
@@ -1225,9 +1385,9 @@ function assessBurnout() {
   addXP(15);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // SIMULATE PAGE
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 function runSkillSimulation() {
   const role = document.getElementById('simRoleSelect').value;
   const currentStr = document.getElementById('simCurrentSkills').value;
@@ -1265,9 +1425,9 @@ function runSkillSimulation() {
   toast('Simulation complete! +20 XP', '⚗️');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // 2D REGRESSION PAGE
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 let regressionPoints = [];
 let regressionCtx = null;
 let regressionCanvas = null;
@@ -1413,9 +1573,9 @@ function drawRegression(slope, intercept) {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // JOBS PAGE
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 function searchJobs() {
   const skillsStr = document.getElementById('jobSkillsInput').value;
   const skills = skillsStr.split(',').map(s => s.trim()).filter(Boolean);
@@ -1465,9 +1625,9 @@ function searchJobs() {
   addXP(15);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // QUIZ ENGINE
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 let quizState = { skill: '', difficulty: '', questions: [], current: 0, answers: [], startTime: 0 };
 
 function startQuiz() {
@@ -1578,9 +1738,9 @@ function renderQuizResult() {
   toast(`Quiz completed! +${xpEarned} XP`, '🧠');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // POMODORO TIMER
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 let pomTimer = null;
 let pomSeconds = 25 * 60;
 let pomRunning = false;
@@ -1627,9 +1787,9 @@ function updatePomDisplay() {
   document.getElementById('pomCircle').style.strokeDashoffset = circ * (1 - progress);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // 3D UNIVERSE (Simplified)
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 let smBuilt = false;
 
 function initUniverse() {
@@ -1696,9 +1856,9 @@ function filterUniverse() {
   // Simple placeholder
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // SOCIAL PAGE
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 function loadSocialContent() {
   const mentorGrid = document.getElementById('mentorGrid');
   if (mentorGrid) {
@@ -1734,9 +1894,9 @@ function loadSocialContent() {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // LOGIN SCREEN
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 function lcToggleEye() {
   const inp = document.getElementById('lcPass');
   const eye = document.getElementById('lcEye');
@@ -1806,10 +1966,13 @@ function lcSocial(provider) {
   }, 1000);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 // INITIALIZATION
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================
 window.addEventListener('DOMContentLoaded', () => {
+  // Update UI based on config
+  updateConfigUI();
+  
   buildCareerTable();
   buildSkillMap();
   loadSocialContent();
@@ -1843,6 +2006,15 @@ window.addEventListener('DOMContentLoaded', () => {
         <span class="growth-badge ${growthClass(info.growth)}">${info.growth}</span>
       </div>
     `).join('');
+  }
+  
+  // Check API connection
+  if (!window.SKILLSYNC_CONFIG.demoMode && window.SKILLSYNC_CONFIG.features.liveData) {
+    API.get('/health').then(data => {
+      if (data) {
+        toast('Connected to backend! 🚀', '🟢');
+      }
+    });
   }
 });
 </script>
